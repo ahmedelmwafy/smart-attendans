@@ -1,0 +1,46 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../theme/colors.dart';
+import '../theme/text_styles.dart';
+
+class AuthActionButton extends StatelessWidget {
+  final String title;
+  final VoidCallback onPressed;
+
+  const AuthActionButton({
+    super.key,
+    required this.title,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18.r),
+         
+        ),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: ColorsManager.white,
+            foregroundColor: ColorsManager.primary500,
+            minimumSize: Size(260.w, 72.h),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18.r),
+            ),
+            elevation: 0,
+          ),
+          onPressed: onPressed,
+          child: Text(
+            title,
+            style: TextStyles.font24Primary500Weight(context).copyWith(
+              fontSize: 30.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
