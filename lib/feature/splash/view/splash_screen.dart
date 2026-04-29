@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:smart_attendance/feature/splash/widgets/splash_logo.dart';
 import '../../../core/utils/app_assets.dart';
-import '../../../core/widgets/animated_glow_circle.dart';
 import '../view_model/splash_view_model.dart';
-
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -69,12 +66,13 @@ class _SplashScreenState extends State<SplashScreen>
       CurvedAnimation(parent: _contentController, curve: Curves.easeOut),
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.25),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _contentController, curve: Curves.easeOutBack),
-    );
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.25), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _contentController,
+            curve: Curves.easeOutBack,
+          ),
+        );
 
     _contentController.forward();
   }
@@ -89,7 +87,6 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-     
       body: AnimatedBuilder(
         animation: _floatController,
         builder: (context, child) {
@@ -97,11 +94,9 @@ class _SplashScreenState extends State<SplashScreen>
             width: double.infinity,
             height: double.infinity,
             decoration: const BoxDecoration(
-              
               image: DecorationImage(
                 image: AssetImage(AppAssets.splashBg),
                 fit: BoxFit.cover,
-                
               ),
             ),
             child: Center(

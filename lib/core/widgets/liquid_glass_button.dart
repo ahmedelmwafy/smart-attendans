@@ -40,10 +40,10 @@ class LiquidGlassButton extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Container(
+                  SizedBox(
                     width: 52.w,
                     height: 52.h,
-                    
+
                     child: Image.asset(
                       imagePath,
                       width: 30.w,
@@ -55,9 +55,9 @@ class LiquidGlassButton extends StatelessWidget {
                   Expanded(
                     child: Text(
                       title,
-                      style: TextStyles.font24Yellow700Weight(context).copyWith(
-                        fontSize: 30.sp,
-                      ),
+                      style: TextStyles.font24Yellow700Weight(
+                        context,
+                      ).copyWith(fontSize: 30.sp),
                     ),
                   ),
                   const Icon(

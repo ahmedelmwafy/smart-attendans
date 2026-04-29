@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../theme/colors.dart';
 import '../theme/text_styles.dart';
-import 'app_svg.dart';
 
 class AuthTextField extends StatelessWidget {
   final TextEditingController controller;
@@ -31,17 +30,14 @@ class AuthTextField extends StatelessWidget {
             Colors.white.withOpacity(0.08),
           ],
         ),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.4),
-          width: 1,
-        ),
+        border: Border.all(color: Colors.white.withOpacity(0.4), width: 1),
       ),
       child: TextFormField(
         controller: controller,
         obscureText: obscureText,
-        style: TextStyles.font20White500Weight(context).copyWith(
-          fontWeight: FontWeight.w600,
-        ),
+        style: TextStyles.font20White500Weight(
+          context,
+        ).copyWith(fontWeight: FontWeight.w600),
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: TextStyles.font20White500Weight(context).copyWith(
@@ -55,7 +51,7 @@ class AuthTextField extends StatelessWidget {
           prefixIcon: Padding(
             padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 14.h),
             child: Image.asset(
-               iconPath,
+              iconPath,
               width: 26.w,
               height: 26.h,
               color: ColorsManager.white,

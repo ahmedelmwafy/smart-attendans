@@ -3,17 +3,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:smart_attendance/core/theme/text_styles.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/utils/app_assets.dart';
-import '../../../core/widgets/app_svg.dart';
 
 class AuthHeader extends StatelessWidget {
   final String title;
   final VoidCallback? onBack;
 
-  const AuthHeader({
-    super.key,
-    required this.title,
-    this.onBack,
-  });
+  const AuthHeader({super.key, required this.title, this.onBack});
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +31,7 @@ class AuthHeader extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 10.h),
-             Image.asset(AppAssets.fingerprint, width: 150.w, height: 150.h),
+              Image.asset(AppAssets.fingerprint, width: 150.w, height: 150.h),
               SizedBox(height: 12.h),
               Text(
                 title,
@@ -49,10 +44,9 @@ class AuthHeader extends StatelessWidget {
                       offset: Offset(2, 2),
                       blurRadius: 0,
                     ),
-                    
                   ],
                   fontSize: 40.sp,
-                  fontWeight: FontWeight.w700
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],

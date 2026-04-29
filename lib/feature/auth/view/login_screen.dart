@@ -9,7 +9,6 @@ import '../../../core/widgets/auth_action_button.dart';
 import '../../../core/widgets/auth_text_field.dart';
 import '../view_model/login_view_model.dart';
 
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -20,6 +19,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final LoginViewModel _viewModel = LoginViewModel();
 
+  @override
   void dispose() {
     _viewModel.dispose();
     super.dispose();
@@ -44,10 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           child: Column(
             children: [
-              AuthHeader(
-                title: 'Log In',
-                onBack: () => Navigator.pop(context),
-              ),
+              AuthHeader(title: 'Log In', onBack: () => Navigator.pop(context)),
               Transform.translate(
                 offset: Offset(0, -20.h),
                 child: AuthContainer(
@@ -79,18 +76,17 @@ class _LoginScreenState extends State<LoginScreen> {
                             children: [
                               TextSpan(
                                 text: "Don't have an account ? ",
-                                style: TextStyles.font24Yellow700Weight(context)
-                                    .copyWith(
-                                  fontSize: 18.sp,
-                                ),
+                                style: TextStyles.font24Yellow700Weight(
+                                  context,
+                                ).copyWith(fontSize: 18.sp),
                               ),
                               TextSpan(
                                 text: "Sign Up",
                                 style: TextStyles.font20White500Weight(context)
                                     .copyWith(
-                                  fontSize: 18.sp,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                                      fontSize: 18.sp,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                               ),
                             ],
                           ),
