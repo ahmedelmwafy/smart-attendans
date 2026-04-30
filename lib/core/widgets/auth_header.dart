@@ -20,18 +20,18 @@ class AuthHeader extends StatelessWidget {
           child: Column(
             children: [
               Align(
-                alignment: Alignment.centerLeft,
+                alignment: Alignment.centerRight,
                 child: IconButton(
                   onPressed: onBack ?? () => Navigator.pop(context),
                   icon: Icon(
-                    Icons.arrow_back_ios_new,
+                    Icons.arrow_forward_ios,
                     color: ColorsManager.teal,
                     size: 28.sp,
                   ),
                 ),
               ),
               SizedBox(height: 10.h),
-              Image.asset(AppAssets.fingerprint, width: 150.w, height: 150.h),
+              Image.asset(AppAssets.splashLogo, width: 150.w, height: 150.h),
               SizedBox(height: 12.h),
               Text(
                 title,

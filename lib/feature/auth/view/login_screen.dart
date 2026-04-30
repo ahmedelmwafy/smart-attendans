@@ -16,11 +16,24 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   final LoginViewModel _viewModel = LoginViewModel();
 
   @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    // Listen for tab changes to update the UI
+    _tabController.addListener(() {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
   void dispose() {
+    _tabController.dispose();
     _viewModel.dispose();
     super.dispose();
   }
@@ -44,44 +57,156 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           child: Column(
             children: [
-              AuthHeader(title: 'Log In', onBack: () => Navigator.pop(context)),
+              AuthHeader(
+                title: 'تسجيل الدخول',
+                onBack: () => Navigator.pop(context),
+              ),
               Transform.translate(
                 offset: Offset(0, -20.h),
                 child: AuthContainer(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // Premium Tab Selector
+                      Container(
+                        height: 60.h,
+                        padding: EdgeInsets.all(5.w),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(20.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: TabBar(
+                          controller: _tabController,
+                          indicator: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                ColorsManager.primary500,
+                                Colors.blueAccent,
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(15.r),
+                            boxShadow: [
+                              BoxShadow(
+                                color: ColorsManager.primary500.withOpacity(
+                                  0.3,
+                                ),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          labelColor: Colors.white,
+                          unselectedLabelColor: Colors.grey[600],
+                          labelStyle: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16.sp,
+                          ),
+                          indicatorSize: TabBarIndicatorSize.tab,
+                          dividerColor: Colors.transparent,
+                          tabs: const [
+                            Tab(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.supervisor_account_outlined,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text('دكتور'),
+                                ],
+                              ),
+                            ),
+                            Tab(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.school_outlined, size: 20),
+                                  SizedBox(width: 8),
+                                  Text('طالب'),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 35.h),
+
+                      // Animated Content
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 300),
+                        child: _tabController.index == 0
+                            ? Column(
+                                children: [
+                                  AuthTextField(
+                                    controller: _viewModel.emailController,
+                                    hintText: 'البريد الإلكتروني',
+                                    iconPath: AppAssets.email,
+                                  ),
+                                  AuthTextField(
+                                    controller: _viewModel.passwordController,
+                                    hintText: 'كلمة المرور',
+                                    iconPath: AppAssets.lock,
+                                    obscureText: true,
+                                  ),
+                                ],
+                              )
+                            : Column(
+                                children: [
+                                  AuthTextField(
+                                    controller: _viewModel.nameController,
+                                    hintText: 'الاسم بالكامل',
+                                    iconPath: AppAssets.profile,
+                                  ),
+                                  AuthTextField(
+                                    controller: _viewModel.idController,
+                                    hintText: 'الرقم الجامعي',
+                                    iconPath: AppAssets.idCard,
+                                  ),
+                                ],
+                              ),
+                      ),
+
                       SizedBox(height: 20.h),
-                      AuthTextField(
-                        controller: _viewModel.emailController,
-                        hintText: 'Enter Your E-mail',
-                        iconPath: AppAssets.email,
+                      ValueListenableBuilder<bool>(
+                        valueListenable: _viewModel.isLoading,
+                        builder: (context, isLoading, child) {
+                          return AuthActionButton(
+                            title: 'دخول',
+                            isLoading: isLoading,
+                            onPressed: () {
+                              if (_tabController.index == 0) {
+                                _viewModel.login(context);
+                              } else {
+                                _viewModel.loginAsStudent(context);
+                              }
+                            },
+                          );
+                        },
                       ),
-                      AuthTextField(
-                        controller: _viewModel.passwordController,
-                        hintText: 'Enter Your Password',
-                        iconPath: AppAssets.lock,
-                        obscureText: true,
-                      ),
-                      SizedBox(height: 28.h),
-                      AuthActionButton(
-                        title: 'Log In',
-                        onPressed: () => _viewModel.login(context),
-                      ),
-                      SizedBox(height: 30.h),
+                      SizedBox(height: 35.h),
                       GestureDetector(
                         onTap: () => _viewModel.goToRegister(context),
                         child: RichText(
                           text: TextSpan(
                             children: [
                               TextSpan(
-                                text: "Don't have an account ? ",
+                                text: "ليس لديك حساب؟ ",
                                 style: TextStyles.font24Yellow700Weight(
                                   context,
                                 ).copyWith(fontSize: 18.sp),
                               ),
                               TextSpan(
-                                text: "Sign Up",
+                                text: "سجل الآن",
                                 style: TextStyles.font20White500Weight(context)
                                     .copyWith(
                                       fontSize: 18.sp,

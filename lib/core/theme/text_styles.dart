@@ -1,6 +1,5 @@
 // lib/core/theme/text_styles.dart
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'colors.dart';
@@ -488,54 +487,39 @@ class TextStyles {
   );
 
   // ==================== Special Styles ====================
-  static FontWeight _getWeight(bool isArabic, {
-    FontWeight arabicWeight = FontWeight.w700,
-    FontWeight englishWeight = FontWeight.w400,
-  }) {
-    return isArabic ? arabicWeight : englishWeight;
-  }
-
   static TextStyle header(BuildContext context) {
-    final isArabic = context.locale.languageCode == 'ar';
     return TextStyle(
       fontSize: fontSize(16),
-      fontWeight: _getWeight(isArabic),
+      fontWeight: FontWeight.w700,
       color: _textPrimary(context),
-      fontFamily: isArabic ? _font : 'Akkurat-Bold',
+      fontFamily: _font,
     );
   }
 
   static TextStyle shop(BuildContext context) {
-    final isArabic = context.locale.languageCode == 'ar';
     return TextStyle(
       fontSize: fontSize(16),
-      fontWeight: _getWeight(isArabic),
+      fontWeight: FontWeight.w700,
       color: ColorsManager.white,
-      fontFamily: isArabic ? _font : 'georgia',
+      fontFamily: _font,
     );
   }
 
   static TextStyle brand(BuildContext context) {
-    final isArabic = context.locale.languageCode == 'ar';
     return TextStyle(
       fontSize: fontSize(16),
-      fontWeight: _getWeight(isArabic),
+      fontWeight: FontWeight.w700,
       color: _textPrimary(context),
-      fontFamily: isArabic ? _font : 'Chronicle',
+      fontFamily: _font,
     );
   }
 
   static TextStyle customStyle(BuildContext context) {
-    final isArabic = context.locale.languageCode == 'ar';
     return TextStyle(
       fontSize: fontSize(14),
-      fontWeight: _getWeight(
-        isArabic,
-        arabicWeight: FontWeight.w600,
-        englishWeight: FontWeight.w400,
-      ),
+      fontWeight: FontWeight.w600,
       color: _textPrimary(context),
-      fontFamily: isArabic ? _font : 'Akkurat',
+      fontFamily: _font,
     );
   }
 }

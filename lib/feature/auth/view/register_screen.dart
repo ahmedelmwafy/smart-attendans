@@ -50,7 +50,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: Column(
                 children: [
                   AuthHeader(
-                    title: 'Create Your Account',
+                    title: 'إنشاء حساب جديد',
                     onBack: () => Navigator.pop(context),
                   ),
                   Transform.translate(
@@ -60,26 +60,47 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           AuthTextField(
+                            controller: _viewModel.fullNameController,
+                            hintText: 'أدخل الاسم بالكامل',
+                            iconPath: AppAssets.profile,
+                          ),
+                          AuthTextField(
+                            controller: _viewModel.facultyIdController,
+                            hintText: 'أدخل رقم الكلية',
+                            iconPath: AppAssets.idCard, // Assuming idCard exists or I'll check
+                          ),
+                          AuthTextField(
+                            controller: _viewModel.departmentController,
+                            hintText: 'أدخل القسم',
+                            iconPath: AppAssets.department, // Assuming department exists
+                          ),
+                          AuthTextField(
                             controller: _viewModel.emailController,
-                            hintText: 'Enter Your E-mail',
+                            hintText: 'أدخل البريد الإلكتروني',
                             iconPath: AppAssets.email,
                           ),
                           AuthTextField(
                             controller: _viewModel.passwordController,
-                            hintText: 'Enter Your Password',
+                            hintText: 'أدخل كلمة المرور',
                             iconPath: AppAssets.lock,
                             obscureText: true,
                           ),
                           AuthTextField(
                             controller: _viewModel.confirmPasswordController,
-                            hintText: 'Confirm Your Password',
+                            hintText: 'تأكيد كلمة المرور',
                             iconPath: AppAssets.lock,
                             obscureText: true,
                           ),
                           SizedBox(height: 10.h),
-                          AuthActionButton(
-                            title: 'Creat Account',
-                            onPressed: () => _viewModel.register(context),
+                          ValueListenableBuilder<bool>(
+                            valueListenable: _viewModel.isLoading,
+                            builder: (context, isLoading, child) {
+                              return AuthActionButton(
+                                title: 'إنشاء الحساب',
+                                isLoading: isLoading,
+                                onPressed: () => _viewModel.register(context),
+                              );
+                            },
                           ),
                           SizedBox(height: 15.h),
                           GestureDetector(
@@ -88,14 +109,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               text: TextSpan(
                                 children: [
                                   TextSpan(
-                                    text: "Already a member ? ",
+                                    text: "لديك حساب بالفعل؟ ",
                                     style: TextStyles.font24Yellow700Weight(context)
                                         .copyWith(
                                       fontSize: 18.sp,
                                     ),
                                   ),
                                   TextSpan(
-                                    text: "Log In",
+                                    text: "تسجيل الدخول",
                                     style: TextStyles.font20White500Weight(context)
                                         .copyWith(
                                       fontSize: 18.sp,
