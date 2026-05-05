@@ -14,11 +14,14 @@ class AdminDashboard extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('لوحة تحكم المسؤول'),
+        title: const Text(
+          'لوحة تحكم المسؤول',
+          style: TextStyle(color: ColorsManager.white),
+        ),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [ColorsManager.teal, Colors.tealAccent],
+              colors: [ColorsManager.primaryColor, ColorsManager.primary400],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -26,10 +29,12 @@ class AdminDashboard extends StatelessWidget {
         ),
         actions: [
           IconButton(
+            color: ColorsManager.white,
             icon: const Icon(Icons.info_outline),
             onPressed: () => showFacultyInfo(context),
           ),
           IconButton(
+            color: ColorsManager.white,
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await authService.signOut();
@@ -39,9 +44,7 @@ class AdminDashboard extends StatelessWidget {
         ],
       ),
       body: Container(
-        decoration: BoxDecoration(
-          color: Colors.grey[50],
-        ),
+        decoration: const BoxDecoration(color: ColorsManager.grey100),
         child: Padding(
           padding: EdgeInsets.all(25.w),
           child: Column(
@@ -58,7 +61,10 @@ class AdminDashboard extends StatelessWidget {
               SizedBox(height: 10.h),
               Text(
                 'اختر القسم الذي ترغب في إدارته من القائمة أدناه:',
-                style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: ColorsManager.darkGray,
+                ),
               ),
               SizedBox(height: 30.h),
               Expanded(
@@ -73,31 +79,37 @@ class AdminDashboard extends StatelessWidget {
                       subtitle: 'إضافة، عرض، وحذف الطلاب من الدليل',
                       icon: Icons.people,
                       color: ColorsManager.teal,
-                      onTap: () => Navigator.pushNamed(context, AppRoutes.studentList),
+                      onTap: () =>
+                          Navigator.pushNamed(context, AppRoutes.studentList),
                     ),
                     _buildManagementCard(
                       context,
                       title: 'إدارة المواد',
                       subtitle: 'إدارة المواد الدراسية وحالة تفعيلها',
                       icon: Icons.library_books,
-                      color: Colors.green,
-                      onTap: () => Navigator.pushNamed(context, AppRoutes.subjectList),
+                      color: ColorsManager.green,
+                      onTap: () =>
+                          Navigator.pushNamed(context, AppRoutes.subjectList),
                     ),
                     _buildManagementCard(
                       context,
                       title: 'إدارة الدكاترة',
                       subtitle: 'إضافة وإدارة حسابات أعضاء هيئة التدريس',
                       icon: Icons.supervisor_account,
-                      color: Colors.orange,
-                      onTap: () => Navigator.pushNamed(context, AppRoutes.doctorList),
+                      color: ColorsManager.orange,
+                      onTap: () =>
+                          Navigator.pushNamed(context, AppRoutes.doctorList),
                     ),
                     _buildManagementCard(
                       context,
                       title: 'سجل الحضور العام',
                       subtitle: 'مراجعة كافة سجلات الحضور في التطبيق',
                       icon: Icons.list_alt,
-                      color: Colors.purple,
-                      onTap: () => Navigator.pushNamed(context, AppRoutes.attendanceHistory),
+                      color: ColorsManager.purple,
+                      onTap: () => Navigator.pushNamed(
+                        context,
+                        AppRoutes.attendanceHistory,
+                      ),
                     ),
                   ],
                 ),
@@ -122,7 +134,7 @@ class AdminDashboard extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: ColorsManager.white,
           borderRadius: BorderRadius.circular(25.r),
           boxShadow: [
             BoxShadow(
@@ -153,7 +165,7 @@ class AdminDashboard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: ColorsManager.black,
                     ),
                   ),
                   SizedBox(height: 5.h),
@@ -161,13 +173,17 @@ class AdminDashboard extends StatelessWidget {
                     subtitle,
                     style: TextStyle(
                       fontSize: 12.sp,
-                      color: Colors.grey[600],
+                      color: ColorsManager.darkGray,
                     ),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios, color: Colors.grey[300], size: 18.w),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: ColorsManager.grey200,
+              size: 18.w,
+            ),
           ],
         ),
       ),

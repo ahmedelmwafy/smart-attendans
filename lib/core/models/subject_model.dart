@@ -2,11 +2,13 @@ class SubjectModel {
   final String id;
   final String name;
   final String? doctorId;
+  final List<String> enrolledStudentIds;
 
   SubjectModel({
     required this.id,
     required this.name,
     this.doctorId,
+    this.enrolledStudentIds = const [],
   });
 
   Map<String, dynamic> toMap() {
@@ -14,6 +16,7 @@ class SubjectModel {
       'id': id,
       'name': name,
       'doctorId': doctorId,
+      'enrolledStudentIds': enrolledStudentIds,
     };
   }
 
@@ -22,6 +25,7 @@ class SubjectModel {
       id: map['id'] ?? '',
       name: map['name'] ?? '',
       doctorId: map['doctorId'],
+      enrolledStudentIds: List<String>.from(map['enrolledStudentIds'] ?? []),
     );
   }
 }

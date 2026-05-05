@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../core/services/auth_service.dart';
+import '../../../core/services/biometric_service.dart';
 
 class LoginViewModel {
   final emailController = TextEditingController();
@@ -15,12 +16,80 @@ class LoginViewModel {
   final AuthService _authService = AuthService();
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
+  // Biometric authentication
+  final BiometricService _biometricService = BiometricService();
+  final ValueNotifier<bool> canUseBiometric = ValueNotifier(false);
+  final ValueNotifier<bool> hasStoredCredentials = ValueNotifier(false);
+  final ValueNotifier<bool> isBiometricLoading = ValueNotifier(false);
+
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
     nameController.dispose();
     idController.dispose();
     isLoading.dispose();
+    canUseBiometric.dispose();
+    hasStoredCredentials.dispose();
+    isBiometricLoading.dispose();
+  }
+
+  /// Initialize biometric authentication - check device capability and stored credentials
+  Future<void> initBiometric() async {
+    final isAvailable = await _biometricService.isBiometricAvailable();
+    canUseBiometric.value = isAvailable;
+
+    if (isAvailable) {
+      hasStoredCredentials.value = await _biometricService
+          .hasStoredCredentials();
+    }
+  }
+
+  /// Login with biometric authentication
+  /// Note: Skip Firestore verification since credentials were validated during first login
+  Future<void> loginWithBiometric(BuildContext context) async {
+    if (!canUseBiometric.value || !hasStoredCredentials.value) {
+      return;
+    }
+
+    isBiometricLoading.value = true;
+    try {
+      final authenticated = await _biometricService.authenticate();
+      if (!authenticated) {
+        _showError(context, 'فشل التحقق من البصمة');
+        return;
+      }
+
+      final credentials = await _biometricService.getStoredCredentials();
+      if (credentials == null) {
+        _showError(context, 'لم يتم العثور على بيانات محفوظة');
+        return;
+      }
+
+      // Use stored credentials for auto-login
+      nameController.text = credentials.name;
+      idController.text = credentials.studentId;
+
+      // Directly sign in with Firebase Auth (skip Firestore verification
+      // since credentials were already validated during first manual login)
+      final String studentEmail =
+          "${credentials.studentId}@smart-attendance.com";
+      final String studentPassword = credentials.studentId;
+
+      final result = await _authService.signIn(studentEmail, studentPassword);
+
+      if (result != null) {
+        Navigator.pushReplacementNamed(context, '/student_dashboard');
+      } else {
+        // If sign-in fails, credentials may be stale - clear them
+        await _biometricService.clearCredentials();
+        hasStoredCredentials.value = false;
+        _showError(context, 'فشل تسجيل الدخول. يرجى تسجيل الدخول يدوياً.');
+      }
+    } catch (e) {
+      _showError(context, 'حدث خطأ أثناء تسجيل الدخول بالبصمة');
+    } finally {
+      isBiometricLoading.value = false;
+    }
   }
 
   // Traditional Login (Email/Password) for Doctors/Admins
@@ -38,9 +107,7 @@ class LoginViewModel {
       // Special case for SuperAdmin
       if (email == 'admin@smartattendance.com' && password == '123456') {
         var result = await _authService.signIn(email, password);
-        if (result == null) {
-          result = await _authService.signUp(email, password, 'Admin', null);
-        }
+        result ??= await _authService.signUp(email, password, 'Admin', null);
 
         if (result != null) {
           Navigator.pushReplacementNamed(context, '/admin_dashboard');
@@ -75,49 +142,62 @@ class LoginViewModel {
 
     isLoading.value = true;
     try {
-      // 1. Verify that the student exists in the UNIVERSITY DIRECTORY (students collection)
-      var studentQuery = await _db
-          .collection('students')
-          .where('Name', isEqualTo: name)
-          .where('Student_ID', isEqualTo: int.tryParse(id) ?? id)
-          .get();
-
-      if (studentQuery.docs.isEmpty) {
-        _showError(
-          context,
-          'بيانات الطالب غير موجودة في سجلات الجامعة. تأكد من كتابة الاسم والاسم الرباعي بشكل صحيح.',
-        );
-        return;
-      }
-
-      // 2. We found the student! Now let's log them into Firebase.
-      // We use their ID as a hidden email and password.
-      final String studentEmail = "$id@smart-attendance.com";
-      final String studentPassword = id;
-
-      // Try to sign in
-      var result = await _authService.signIn(studentEmail, studentPassword);
-
-      // 3. If they don't have an account yet, create one automatically in the background
-      if (result == null) {
-        result = await _authService.signUp(
-          studentEmail,
-          studentPassword,
-          name,
-          id,
-        );
-      }
-
-      if (result != null) {
-        Navigator.pushReplacementNamed(context, '/student_dashboard');
-      } else {
-        _showError(context, 'فشل في تهيئة حساب الطالب. يرجى المحاولة لاحقاً.');
-      }
-    } catch (e) {
-      print("Login error: $e");
-      _showError(context, 'حدث خطأ أثناء محاولة الدخول');
+      await _performStudentLogin(context, name, id, saveCredentials: true);
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  /// Core student login logic - used by both manual and biometric login
+  Future<void> _performStudentLogin(
+    BuildContext context,
+    String name,
+    String id, {
+    bool saveCredentials = false,
+  }) async {
+    // 1. Verify that the student exists in the UNIVERSITY DIRECTORY (students collection)
+    var studentQuery = await _db
+        .collection('students')
+        .where('Name', isEqualTo: name)
+        .where('Student_ID', isEqualTo: int.tryParse(id) ?? id)
+        .get();
+
+    if (studentQuery.docs.isEmpty) {
+      _showError(
+        context,
+        'بيانات الطالب غير موجودة في سجلات الجامعة. تأكد من كتابة الاسم والاسم الرباعي بشكل صحيح.',
+      );
+      return;
+    }
+
+    // 2. We found the student! Now let's log them into Firebase.
+    // We use their ID as a hidden email and password.
+    final String studentEmail = "$id@smart-attendance.com";
+    final String studentPassword = id;
+
+    // Try to sign in
+    var result = await _authService.signIn(studentEmail, studentPassword);
+
+    // 3. If they don't have an account yet, create one automatically in the background
+    result ??= await _authService.signUp(
+      studentEmail,
+      studentPassword,
+      name,
+      id,
+    );
+
+    if (result != null) {
+      // Save credentials for future biometric login
+      if (saveCredentials && canUseBiometric.value) {
+        await _biometricService.saveStudentCredentials(
+          name: name,
+          studentId: id,
+        );
+        hasStoredCredentials.value = true;
+      }
+      Navigator.pushReplacementNamed(context, '/student_dashboard');
+    } else {
+      _showError(context, 'فشل في تهيئة حساب الطالب. يرجى المحاولة لاحقاً.');
     }
   }
 

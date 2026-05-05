@@ -29,6 +29,8 @@ class _LoginScreenState extends State<LoginScreen>
     _tabController.addListener(() {
       if (mounted) setState(() {});
     });
+    // Initialize biometric authentication
+    _viewModel.initBiometric();
   }
 
   @override
@@ -62,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen>
                 onBack: () => Navigator.pop(context),
               ),
               Transform.translate(
-                offset: Offset(0, -20.h),
+                offset: Offset(0, -120.h),
                 child: AuthContainer(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -72,11 +74,11 @@ class _LoginScreenState extends State<LoginScreen>
                         height: 60.h,
                         padding: EdgeInsets.all(5.w),
                         decoration: BoxDecoration(
-                          color: Colors.grey[100],
+                          color: ColorsManager.grey100,
                           borderRadius: BorderRadius.circular(20.r),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: ColorsManager.black.withOpacity(0.05),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -88,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen>
                             gradient: LinearGradient(
                               colors: [
                                 ColorsManager.primary500,
-                                Colors.blueAccent,
+                                ColorsManager.primary400,
                               ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
@@ -104,14 +106,14 @@ class _LoginScreenState extends State<LoginScreen>
                               ),
                             ],
                           ),
-                          labelColor: Colors.white,
-                          unselectedLabelColor: Colors.grey[600],
+                          labelColor: ColorsManager.white,
+                          unselectedLabelColor: ColorsManager.darkGray,
                           labelStyle: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16.sp,
                           ),
                           indicatorSize: TabBarIndicatorSize.tab,
-                          dividerColor: Colors.transparent,
+                          dividerColor: ColorsManager.transparent,
                           tabs: const [
                             Tab(
                               child: Row(
@@ -162,21 +164,109 @@ class _LoginScreenState extends State<LoginScreen>
                               )
                             : Column(
                                 children: [
-                                  AuthTextField(
-                                    controller: _viewModel.nameController,
-                                    hintText: 'الاسم بالكامل',
-                                    iconPath: AppAssets.profile,
-                                  ),
-                                  AuthTextField(
-                                    controller: _viewModel.idController,
-                                    hintText: 'الرقم الجامعي',
-                                    iconPath: AppAssets.idCard,
+                                  // Biometric login section for returning students
+                                  ValueListenableBuilder<bool>(
+                                    valueListenable:
+                                        _viewModel.hasStoredCredentials,
+                                    builder: (context, hasCredentials, child) {
+                                      if (!hasCredentials) {
+                                        return Column(
+                                          children: [
+                                            // Manual login fields (always visible)
+                                            AuthTextField(
+                                              controller:
+                                                  _viewModel.nameController,
+                                              hintText: 'الاسم بالكامل',
+                                              iconPath: AppAssets.profile,
+                                            ),
+                                            AuthTextField(
+                                              controller:
+                                                  _viewModel.idController,
+                                              hintText: 'الرقم الجامعي',
+                                              iconPath: AppAssets.idCard,
+                                            ),
+                                          ],
+                                        );
+                                      }
+                                      return Column(
+                                        children: [
+                                          ValueListenableBuilder<bool>(
+                                            valueListenable:
+                                                _viewModel.isBiometricLoading,
+                                            builder: (context, isBiometricLoading, child) {
+                                              return GestureDetector(
+                                                onTap: isBiometricLoading
+                                                    ? null
+                                                    : () => _viewModel
+                                                          .loginWithBiometric(
+                                                            context,
+                                                          ),
+                                                child: Container(
+                                                  padding: EdgeInsets.symmetric(
+                                                    vertical: 20.h,
+                                                    horizontal: 24.w,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    gradient: LinearGradient(
+                                                      colors: [
+                                                        ColorsManager.primary500
+                                                            .withOpacity(0.1),
+                                                        ColorsManager.primary400
+                                                            .withOpacity(0.05),
+                                                      ],
+                                                      begin: Alignment.topLeft,
+                                                      end:
+                                                          Alignment.bottomRight,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          16.r,
+                                                        ),
+                                                    border: Border.all(
+                                                      color: ColorsManager
+                                                          .primary500
+                                                          .withOpacity(0.3),
+                                                      width: 1.5,
+                                                    ),
+                                                  ),
+                                                  child: Column(
+                                                    children: [
+                                                      Icon(
+                                                        Icons.fingerprint,
+                                                        size: 48.sp,
+                                                        color:
+                                                            ColorsManager.white,
+                                                      ),
+                                                      SizedBox(height: 12.h),
+                                                      Text(
+                                                        'الدخول بالبصمة',
+                                                        style:
+                                                            TextStyles.font20White500Weight(
+                                                              context,
+                                                            ).copyWith(
+                                                              color:
+                                                                  ColorsManager
+                                                                      .white,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                            ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      );
+                                    },
                                   ),
                                 ],
                               ),
                       ),
 
-                      SizedBox(height: 20.h),
+                      // SizedBox(height: 16.h),
                       ValueListenableBuilder<bool>(
                         valueListenable: _viewModel.isLoading,
                         builder: (context, isLoading, child) {
@@ -193,7 +283,7 @@ class _LoginScreenState extends State<LoginScreen>
                           );
                         },
                       ),
-                      SizedBox(height: 35.h),
+                      SizedBox(height: 24.h),
                       GestureDetector(
                         onTap: () => _viewModel.goToRegister(context),
                         child: RichText(
@@ -203,13 +293,13 @@ class _LoginScreenState extends State<LoginScreen>
                                 text: "ليس لديك حساب؟ ",
                                 style: TextStyles.font24Yellow700Weight(
                                   context,
-                                ).copyWith(fontSize: 18.sp),
+                                ).copyWith(fontSize: 16.sp),
                               ),
                               TextSpan(
                                 text: "سجل الآن",
                                 style: TextStyles.font20White500Weight(context)
                                     .copyWith(
-                                      fontSize: 18.sp,
+                                      fontSize: 16.sp,
                                       fontWeight: FontWeight.w700,
                                     ),
                               ),

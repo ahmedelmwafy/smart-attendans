@@ -1,7 +1,10 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
 import '../models/subject_model.dart';
 import '../models/attendance_model.dart';
+import '../models/notification_model.dart';
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -106,6 +109,10 @@ class FirestoreService {
     });
   }
 
+  Future<void> unassignSubjectFromDoctor(String subjectId) async {
+    await _db.collection('subjects').doc(subjectId).update({'doctorId': null});
+  }
+
   Future<List<SubjectModel>> getUnassignedSubjects() async {
     final query = await _db
         .collection('subjects')
@@ -192,5 +199,170 @@ class FirestoreService {
   Future<Map<String, dynamic>?> getSession(String subjectId) async {
     final doc = await _db.collection('sessions').doc(subjectId).get();
     return doc.data();
+  }
+
+  // ─── Enrollment Management ──────────────────────────────────────────────────
+
+  Future<void> updateSubjectEnrollment(
+    String subjectId,
+    List<String> studentIds,
+  ) async {
+    await _db.collection('subjects').doc(subjectId).update({
+      'enrolledStudentIds': studentIds,
+    });
+  }
+
+  Future<void> enrollStudentInSubject(
+    String subjectId,
+    String studentId,
+  ) async {
+    await _db.collection('subjects').doc(subjectId).update({
+      'enrolledStudentIds': FieldValue.arrayUnion([studentId]),
+    });
+  }
+
+  Future<void> unenrollStudentFromSubject(
+    String subjectId,
+    String studentId,
+  ) async {
+    await _db.collection('subjects').doc(subjectId).update({
+      'enrolledStudentIds': FieldValue.arrayRemove([studentId]),
+    });
+  }
+
+  // ─── Notification / Absence Alerts ──────────────────────────────────────────
+
+  /// Gets attendance records for a subject on a specific date.
+  Future<List<AttendanceRecordModel>> getAttendanceForSubjectOnDate(
+    String subjectId,
+    DateTime date,
+  ) async {
+    final startOfDay = DateTime(date.year, date.month, date.day);
+    final endOfDay = startOfDay.add(const Duration(days: 1));
+
+    final query = await _db
+        .collection('attendance')
+        .where('subjectId', isEqualTo: subjectId)
+        .where(
+          'timestamp',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay),
+        )
+        .where('timestamp', isLessThan: Timestamp.fromDate(endOfDay))
+        .get();
+
+    return query.docs
+        .map((d) => AttendanceRecordModel.fromMap(d.data()))
+        .toList();
+  }
+
+  /// Sends absence alerts to enrolled students who didn't attend.
+  /// Returns the number of alerts sent.
+  Future<int> sendAbsenceAlerts({
+    required String subjectId,
+    required String subjectName,
+    required DateTime date,
+  }) async {
+    log(subjectId);
+    // 1. Get the subject to find enrolled students
+    final subjectDoc = await _db.collection('subjects').doc(subjectId).get();
+    if (!subjectDoc.exists) return 0;
+
+    final enrolledIds = List<String>.from(
+      subjectDoc.data()?['enrolledStudentIds'] ?? [],
+    );
+    log('Enrolled IDs: $enrolledIds');
+    if (enrolledIds.isEmpty) {
+      log('No enrolled students found.');
+      return 0;
+    }
+
+    // 2. Get attendance records for this subject on this date
+    final attendanceRecords = await getAttendanceForSubjectOnDate(
+      subjectId,
+      date,
+    );
+    final attendedStudentIds = attendanceRecords
+        .map((r) => r.studentId)
+        .toSet();
+    log('Attended IDs: $attendedStudentIds');
+
+    // 3. Find absent students
+    final absentStudentIds = enrolledIds
+        .where((id) => !attendedStudentIds.contains(id))
+        .toList();
+    log('Absent IDs: $absentStudentIds');
+    if (absentStudentIds.isEmpty) {
+      log('No absent students found.');
+      return 0;
+    }
+
+    // 4. Format date for message
+    final dateStr =
+        '${date.year}/${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}';
+    final message = 'لم يتم تسجيل حضورك في محاضرة $subjectName بتاريخ $dateStr';
+
+    // 5. Write notification for each absent student
+    final batch = _db.batch();
+    for (final studentId in absentStudentIds) {
+      final docRef = _db.collection('notifications').doc();
+      batch.set(docRef, {
+        'id': docRef.id,
+        'studentId': studentId,
+        'subjectId': subjectId,
+        'subjectName': subjectName,
+        'message': message,
+        'timestamp': FieldValue.serverTimestamp(),
+        'isRead': false,
+      });
+    }
+    await batch.commit();
+
+    return absentStudentIds.length;
+  }
+
+  /// Fetches all notifications for a student, ordered by newest first.
+  Future<List<NotificationModel>> getStudentNotifications(
+    String studentId,
+  ) async {
+    final query = await _db
+        .collection('notifications')
+        .where('studentId', isEqualTo: studentId)
+        .orderBy('timestamp', descending: true)
+        .get();
+
+    return query.docs.map((d) => NotificationModel.fromMap(d.data())).toList();
+  }
+
+  /// Returns count of unread notifications for a student.
+  Future<int> getUnreadNotificationCount(String studentId) async {
+    final query = await _db
+        .collection('notifications')
+        .where('studentId', isEqualTo: studentId)
+        .where('isRead', isEqualTo: false)
+        .get();
+
+    return query.docs.length;
+  }
+
+  /// Marks a single notification as read.
+  Future<void> markNotificationAsRead(String notificationId) async {
+    await _db.collection('notifications').doc(notificationId).update({
+      'isRead': true,
+    });
+  }
+
+  /// Marks all notifications for a student as read.
+  Future<void> markAllNotificationsAsRead(String studentId) async {
+    final query = await _db
+        .collection('notifications')
+        .where('studentId', isEqualTo: studentId)
+        .where('isRead', isEqualTo: false)
+        .get();
+
+    final batch = _db.batch();
+    for (final doc in query.docs) {
+      batch.update(doc.reference, {'isRead': true});
+    }
+    await batch.commit();
   }
 }

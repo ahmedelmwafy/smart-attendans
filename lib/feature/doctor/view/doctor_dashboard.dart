@@ -50,11 +50,14 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('لوحة تحكم الدكتور'),
+        title: Text(
+          'لوحة تحكم الدكتور',
+          style: TextStyle(color: ColorsManager.white, fontSize: 20.sp),
+        ),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.blueAccent, Colors.lightBlueAccent],
+              colors: [ColorsManager.primaryColor, ColorsManager.primary400],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -62,10 +65,12 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
         ),
         actions: [
           IconButton(
+            color: ColorsManager.white,
             icon: const Icon(Icons.info_outline),
             onPressed: () => showFacultyInfo(context),
           ),
           IconButton(
+            color: ColorsManager.white,
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await _authService.signOut();
@@ -75,7 +80,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
         ],
       ),
       body: Container(
-        decoration: BoxDecoration(color: Colors.grey[50]),
+        decoration: const BoxDecoration(color: ColorsManager.grey100),
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _subjects.isEmpty
@@ -90,7 +95,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                       style: TextStyle(
                         fontSize: 22.sp,
                         fontWeight: FontWeight.bold,
-                        color: Colors.blue[800],
+                        color: ColorsManager.primaryColor,
                       ),
                     ),
                   ),
@@ -117,11 +122,11 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
     return Container(
       margin: EdgeInsets.only(bottom: 20.h),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ColorsManager.white,
         borderRadius: BorderRadius.circular(25.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: ColorsManager.black.withOpacity(0.05),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -136,10 +141,14 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                 Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
+                    color: ColorsManager.blue.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.book, color: Colors.blue[700], size: 28.w),
+                  child: Icon(
+                    Icons.book,
+                    color: ColorsManager.blue,
+                    size: 28.w,
+                  ),
                 ),
                 SizedBox(width: 15.w),
                 Expanded(
@@ -151,12 +160,15 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                         style: TextStyle(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: ColorsManager.black,
                         ),
                       ),
                       Text(
                         'اختر إجراء للمادة:',
-                        style: TextStyle(fontSize: 12.sp, color: Colors.grey),
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: ColorsManager.grey,
+                        ),
                       ),
                     ],
                   ),
@@ -164,7 +176,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
               ],
             ),
           ),
-          Divider(height: 1, color: Colors.grey[100]),
+          Divider(height: 1, color: ColorsManager.grey100),
           Padding(
             padding: EdgeInsets.all(10.w),
             child: Row(
@@ -173,7 +185,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                   child: _buildActionButton(
                     label: 'توليد QR',
                     icon: Icons.qr_code,
-                    color: Colors.blue,
+                    color: ColorsManager.blue,
                     onTap: () => Navigator.pushNamed(
                       context,
                       AppRoutes.generateQr,
@@ -186,7 +198,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                   child: _buildActionButton(
                     label: 'السجل',
                     icon: Icons.history,
-                    color: Colors.green,
+                    color: ColorsManager.green,
                     onTap: () => Navigator.pushNamed(
                       context,
                       AppRoutes.attendanceHistory,
@@ -199,7 +211,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                   child: _buildActionButton(
                     label: 'تحضير يدوي',
                     icon: Icons.person_add,
-                    color: Colors.orange,
+                    color: ColorsManager.orange,
                     onTap: () {
                       Navigator.push(
                         context,
@@ -230,7 +242,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12.h),
+        padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 4.w),
         decoration: BoxDecoration(
           color: color.withOpacity(0.08),
           borderRadius: BorderRadius.circular(15.r),
@@ -238,15 +250,11 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: color, size: 18.w),
-            SizedBox(width: 8.w),
+            Icon(icon, color: color, size: 20.sp),
+            SizedBox(width: 4.w),
             Text(
               label,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-                fontSize: 14.sp,
-              ),
+              style: TextStyle(color: color, fontSize: 12.sp),
             ),
           ],
         ),

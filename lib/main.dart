@@ -15,13 +15,13 @@ import 'package:smart_attendance/feature/student/view/scan_qr_screen.dart';
 import 'package:smart_attendance/feature/student/view/student_dashboard.dart';
 import 'package:smart_attendance/feature/admin/view/management/student_management_screen.dart';
 import 'package:smart_attendance/feature/admin/view/management/subject_management_screen.dart';
+import 'package:smart_attendance/core/theme/colors.dart';
 import 'package:smart_attendance/feature/admin/view/management/doctor_management_screen.dart';
+import 'package:smart_attendance/feature/student/view/student_notifications_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -38,6 +38,7 @@ class MyApp extends StatelessWidget {
         return Directionality(
           textDirection: TextDirection.rtl,
           child: MaterialApp(
+            title: 'Smart Attendance',
             debugShowCheckedModeBanner: false,
             initialRoute: AppRoutes.splash,
             locale: const Locale('ar'),
@@ -48,8 +49,11 @@ class MyApp extends StatelessWidget {
               GlobalCupertinoLocalizations.delegate,
             ],
             theme: ThemeData(
-              fontFamily: 'Cairo', // Assuming Cairo or similar for Arabic
-              primarySwatch: Colors.teal,
+              fontFamily: 'Tajawal',
+              primarySwatch: ColorsManager.primaryColor.toMaterialColor(),
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: ColorsManager.primaryColor,
+              ),
             ),
             routes: {
               AppRoutes.splash: (_) => const SplashScreen(),
@@ -60,13 +64,19 @@ class MyApp extends StatelessWidget {
               AppRoutes.studentDashboard: (_) => const StudentDashboard(),
               AppRoutes.generateQr: (_) => const GenerateQrScreen(),
               AppRoutes.scanQr: (_) => const ScanQrScreen(),
-              AppRoutes.attendanceHistory: (_) => const AttendanceHistoryScreen(),
+              AppRoutes.attendanceHistory: (_) =>
+                  const AttendanceHistoryScreen(),
               AppRoutes.studentList: (_) => const StudentManagementScreen(),
               AppRoutes.subjectList: (_) => const SubjectManagementScreen(),
               AppRoutes.doctorList: (_) => const DoctorManagementScreen(),
               AppRoutes.addStudent: (_) => const AddStudentScreen(),
               AppRoutes.addSubject: (_) => const AddSubjectScreen(),
               AppRoutes.addDoctor: (_) => const AddDoctorScreen(),
+              AppRoutes.studentNotifications: (context) {
+                final studentId =
+                    ModalRoute.of(context)!.settings.arguments as String;
+                return StudentNotificationsScreen(studentId: studentId);
+              },
             },
           ),
         );

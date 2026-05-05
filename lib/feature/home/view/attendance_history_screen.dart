@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
@@ -5,6 +7,7 @@ import '../../../core/models/attendance_model.dart';
 import '../../../core/models/subject_model.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/services/firestore_service.dart';
+import '../../../core/theme/colors.dart';
 import '../../../core/theme/text_styles.dart';
 import '../../../core/widgets/faculty_info_dialog.dart';
 
@@ -12,7 +15,8 @@ class AttendanceHistoryScreen extends StatefulWidget {
   const AttendanceHistoryScreen({super.key});
 
   @override
-  State<AttendanceHistoryScreen> createState() => _AttendanceHistoryScreenState();
+  State<AttendanceHistoryScreen> createState() =>
+      _AttendanceHistoryScreenState();
 }
 
 class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
@@ -36,14 +40,19 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
 
   Future<void> _loadHistory() async {
     final user = await _authService.getCurrentUserModel();
-    
+
     List<AttendanceRecordModel> records;
     if (_filterSubject != null) {
       // Doctor viewing subject history
       records = await _firestoreService.getSubjectHistory(_filterSubject!.id);
     } else if (user != null && user.role == 'student') {
       // Student viewing their own history
-      records = await _firestoreService.getStudentHistory(user.studentId ?? user.id);
+      log(
+        'Loading attendance history for student ID: ${user.studentId ?? user.id}',
+      );
+      records = await _firestoreService.getStudentHistory(
+        user.studentId ?? user.id,
+      );
     } else {
       // Admin or fallback
       records = await _firestoreService.getAllAttendance();
@@ -72,7 +81,11 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_filterSubject != null ? 'حضور ${_filterSubject!.name}' : 'سجل الحضور'),
+        title: Text(
+          _filterSubject != null
+              ? 'حضور ${_filterSubject!.name}'
+              : 'سجل الحضور',
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.info_outline),
@@ -89,7 +102,9 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
               decoration: InputDecoration(
                 hintText: 'بحث باسم الطالب أو المادة...',
                 prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15.r)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15.r),
+                ),
               ),
             ),
           ),
@@ -97,15 +112,15 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _filteredRecords.isEmpty
-                    ? const Center(child: Text('لا توجد سجلات مطابقة'))
-                    : ListView.builder(
-                        padding: EdgeInsets.symmetric(horizontal: 20.w),
-                        itemCount: _filteredRecords.length,
-                        itemBuilder: (context, index) {
-                          final record = _filteredRecords[index];
-                          return _buildHistoryCard(record);
-                        },
-                      ),
+                ? const Center(child: Text('لا توجد سجلات مطابقة'))
+                : ListView.builder(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    itemCount: _filteredRecords.length,
+                    itemBuilder: (context, index) {
+                      final record = _filteredRecords[index];
+                      return _buildHistoryCard(record);
+                    },
+                  ),
           ),
         ],
       ),
@@ -122,16 +137,21 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
       child: ListTile(
         title: Text(
           record.studentName,
-          style: TextStyles.font20White500Weight(context).copyWith(color: Colors.black, fontSize: 18.sp),
+          style: TextStyles.font20White500Weight(
+            context,
+          ).copyWith(color: ColorsManager.black, fontSize: 18.sp),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('المادة: ${record.subjectName}'),
-            Text('التاريخ: $date | الوقت: $time', style: TextStyle(fontSize: 12.sp, color: Colors.grey)),
+            Text(
+              'التاريخ: $date | الوقت: $time',
+              style: TextStyle(fontSize: 12.sp, color: ColorsManager.grey),
+            ),
           ],
         ),
-        trailing: const Icon(Icons.check_circle, color: Colors.green),
+        trailing: const Icon(Icons.check_circle, color: ColorsManager.green),
       ),
     );
   }

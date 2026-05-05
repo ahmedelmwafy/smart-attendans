@@ -8,7 +8,6 @@ import '../../../core/widgets/auth_action_button.dart';
 import '../../../core/widgets/auth_text_field.dart';
 import '../view_model/register_view_model.dart';
 
-
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -54,7 +53,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     onBack: () => Navigator.pop(context),
                   ),
                   Transform.translate(
-                    offset: Offset(0, -30.h),
+                    offset: Offset(0, -110.h),
                     child: AuthContainer(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -66,13 +65,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           AuthTextField(
                             controller: _viewModel.facultyIdController,
-                            hintText: 'أدخل رقم الكلية',
-                            iconPath: AppAssets.idCard, // Assuming idCard exists or I'll check
-                          ),
-                          AuthTextField(
-                            controller: _viewModel.departmentController,
-                            hintText: 'أدخل القسم',
-                            iconPath: AppAssets.department, // Assuming department exists
+                            hintText: 'أدخل ID الطالب',
+                            iconPath: AppAssets
+                                .idCard, // Assuming idCard exists or I'll check
                           ),
                           AuthTextField(
                             controller: _viewModel.emailController,
@@ -91,7 +86,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             iconPath: AppAssets.lock,
                             obscureText: true,
                           ),
-                          SizedBox(height: 10.h),
+                          // SizedBox(height: 10.h),
                           ValueListenableBuilder<bool>(
                             valueListenable: _viewModel.isLoading,
                             builder: (context, isLoading, child) {
@@ -102,7 +97,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               );
                             },
                           ),
-                          SizedBox(height: 15.h),
+                          SizedBox(height: 24.h),
                           GestureDetector(
                             onTap: () => _viewModel.goBack(context),
                             child: RichText(
@@ -110,18 +105,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 children: [
                                   TextSpan(
                                     text: "لديك حساب بالفعل؟ ",
-                                    style: TextStyles.font24Yellow700Weight(context)
-                                        .copyWith(
-                                      fontSize: 18.sp,
-                                    ),
+                                    style: TextStyles.font24Yellow700Weight(
+                                      context,
+                                    ).copyWith(fontSize: 16.sp),
                                   ),
                                   TextSpan(
                                     text: "تسجيل الدخول",
-                                    style: TextStyles.font20White500Weight(context)
-                                        .copyWith(
-                                      fontSize: 18.sp,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                    style:
+                                        TextStyles.font20White500Weight(
+                                          context,
+                                        ).copyWith(
+                                          fontSize: 16.sp,
+                                          fontWeight: FontWeight.w700,
+                                        ),
                                   ),
                                 ],
                               ),

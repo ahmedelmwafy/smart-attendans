@@ -19,10 +19,8 @@ class AuthActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18.r),
-         
-        ),
+        width: double.infinity,
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(18.r)),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: ColorsManager.white,
@@ -34,22 +32,21 @@ class AuthActionButton extends StatelessWidget {
             elevation: 0,
           ),
           onPressed: isLoading ? null : onPressed,
-          child: isLoading 
-            ? SizedBox(
-                height: 25.h,
-                width: 25.h,
-                child: const CircularProgressIndicator(
-                  color: ColorsManager.primary500,
-                  strokeWidth: 3,
+          child: isLoading
+              ? SizedBox(
+                  height: 25.h,
+                  width: 25.h,
+                  child: const CircularProgressIndicator(
+                    color: ColorsManager.primary500,
+                    strokeWidth: 3,
+                  ),
+                )
+              : Text(
+                  title,
+                  style: TextStyles.font24Primary500Weight(
+                    context,
+                  ).copyWith(fontSize: 20.sp, fontWeight: FontWeight.w700),
                 ),
-              )
-            : Text(
-                title,
-                style: TextStyles.font24Primary500Weight(context).copyWith(
-                  fontSize: 30.sp,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
         ),
       ),
     );

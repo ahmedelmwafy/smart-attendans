@@ -8,7 +8,6 @@ class RegisterViewModel {
   final confirmPasswordController = TextEditingController();
   final facultyIdController = TextEditingController();
   final fullNameController = TextEditingController();
-  final departmentController = TextEditingController();
   final ValueNotifier<bool> isLoading = ValueNotifier(false);
 
   final AuthService _authService = AuthService();
@@ -20,7 +19,6 @@ class RegisterViewModel {
     confirmPasswordController.dispose();
     facultyIdController.dispose();
     fullNameController.dispose();
-    departmentController.dispose();
     isLoading.dispose();
   }
 
@@ -30,14 +28,12 @@ class RegisterViewModel {
     final confirmPassword = confirmPasswordController.text.trim();
     final facultyId = facultyIdController.text.trim();
     final fullName = fullNameController.text.trim();
-    final department = departmentController.text.trim();
 
     if (email.isEmpty ||
         password.isEmpty ||
         confirmPassword.isEmpty ||
         facultyId.isEmpty ||
-        fullName.isEmpty ||
-        department.isEmpty) {
+        fullName.isEmpty) {
       _showError(context, 'يرجى إكمال جميع الحقول');
       return;
     }
@@ -50,20 +46,26 @@ class RegisterViewModel {
     isLoading.value = true;
     try {
       // 1. Validate student against Firestore students collection
-      final studentData =
-          await _firestoreService.validateStudent(fullName, facultyId);
+      final studentData = await _firestoreService.validateStudent(
+        fullName,
+        facultyId,
+      );
       if (studentData == null) {
         _showError(context, 'بيانات الطالب غير موجودة في قاعدة البيانات');
         return;
       }
 
       // 2. Register in Firebase Auth
-      final result =
-          await _authService.signUp(email, password, fullName, facultyId);
+      final result = await _authService.signUp(
+        email,
+        password,
+        fullName,
+        facultyId,
+      );
       if (result != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تم إنشاء الحساب بنجاح')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('تم إنشاء الحساب بنجاح')));
         Navigator.pop(context);
       } else {
         _showError(context, 'حدث خطأ أثناء إنشاء الحساب');
@@ -76,9 +78,9 @@ class RegisterViewModel {
   }
 
   void _showError(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void goBack(BuildContext context) {

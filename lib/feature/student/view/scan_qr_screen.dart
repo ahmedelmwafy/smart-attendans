@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import '../../../core/models/attendance_model.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/services/firestore_service.dart';
+import '../../../core/theme/colors.dart';
 
 class ScanQrScreen extends StatefulWidget {
   const ScanQrScreen({super.key});
@@ -27,7 +28,7 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
             controller: controller,
             onDetect: (capture) async {
               if (_isProcessing) return;
-              
+
               final List<Barcode> barcodes = capture.barcodes;
               if (barcodes.isNotEmpty) {
                 final String? code = barcodes.first.rawValue;
@@ -40,14 +41,17 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
           ),
           if (_isProcessing)
             Container(
-              color: Colors.black54,
+              color: ColorsManager.black.withOpacity(0.54),
               child: const Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(color: Colors.white),
+                    CircularProgressIndicator(color: ColorsManager.white),
                     SizedBox(height: 20),
-                    Text('جاري التحقق من البيانات والموقع...', style: TextStyle(color: Colors.white)),
+                    Text(
+                      'جاري التحقق من البيانات والموقع...',
+                      style: TextStyle(color: ColorsManager.white),
+                    ),
                   ],
                 ),
               ),
@@ -81,7 +85,7 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
         targetLong: sessionData['long'],
         radius: sessionData['radius'],
       );
-      
+
       if (!isWithinRange) {
         _showError('أنت خارج النطاق المسموح به لتسجيل الحضور');
         return;
@@ -103,11 +107,11 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
       );
 
       await _firestoreService.recordAttendance(record);
-      
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تم تسجيل الحضور بنجاح')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('تم تسجيل الحضور بنجاح')));
         Navigator.pop(context);
       }
     } else {
@@ -115,15 +119,19 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
     }
   }
 
-  Future<bool> _checkLocation({required double targetLat, required double targetLong, required double radius}) async {
+  Future<bool> _checkLocation({
+    required double targetLat,
+    required double targetLong,
+    required double radius,
+  }) async {
     try {
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
-      
+
       if (permission == LocationPermission.deniedForever) return false;
-      
+
       Position currentPosition = await Geolocator.getCurrentPosition();
       double distanceInMeters = Geolocator.distanceBetween(
         currentPosition.latitude,
@@ -141,9 +149,9 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
 
   void _showError(String message) {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
       setState(() => _isProcessing = false);
     }
   }

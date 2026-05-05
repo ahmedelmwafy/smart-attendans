@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/services/firestore_service.dart';
+import '../../../../core/theme/colors.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/models/user_model.dart';
 import '../../../../core/models/subject_model.dart';
@@ -46,7 +47,7 @@ class _DoctorManagementScreenState extends State<DoctorManagementScreen> {
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.orange, Colors.orangeAccent],
+              colors: [ColorsManager.orange, ColorsManager.secondary200],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -67,8 +68,8 @@ class _DoctorManagementScreenState extends State<DoctorManagementScreen> {
                 ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddDoctorPage(context),
-        backgroundColor: Colors.orange,
-        child: const Icon(Icons.person_add, color: Colors.white),
+        backgroundColor: ColorsManager.orange,
+        child: const Icon(Icons.person_add, color: ColorsManager.white),
       ),
     );
   }
@@ -78,11 +79,11 @@ class _DoctorManagementScreenState extends State<DoctorManagementScreen> {
       margin: EdgeInsets.only(bottom: 15.h),
       padding: EdgeInsets.all(15.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ColorsManager.white,
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: ColorsManager.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -93,10 +94,10 @@ class _DoctorManagementScreenState extends State<DoctorManagementScreen> {
           Container(
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(0.1),
+              color: ColorsManager.orange.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.supervisor_account, color: Colors.orange, size: 25.w),
+            child: Icon(Icons.supervisor_account, color: ColorsManager.orange, size: 25.w),
           ),
           SizedBox(width: 15.w),
           Expanded(
@@ -109,13 +110,25 @@ class _DoctorManagementScreenState extends State<DoctorManagementScreen> {
                 ),
                 Text(
                   doctor.email,
-                  style: TextStyle(color: Colors.grey, fontSize: 12.sp),
+                  style: TextStyle(color: ColorsManager.grey, fontSize: 12.sp),
                 ),
               ],
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.delete_outline, color: Colors.red),
+            icon: const Icon(Icons.book_outlined, color: ColorsManager.primaryColor),
+            tooltip: 'تعديل المواد',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EditDoctorSubjectsScreen(doctor: doctor),
+                ),
+              ).then((_) => _loadDoctors());
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline, color: ColorsManager.red),
             onPressed: () => _confirmDelete(doctor.id),
           ),
         ],
@@ -144,7 +157,7 @@ class _DoctorManagementScreenState extends State<DoctorManagementScreen> {
                     Navigator.pop(context);
                     _loadDoctors();
                   },
-                  child: const Text('حذف', style: TextStyle(color: Colors.red)),
+                  child: const Text('حذف', style: TextStyle(color: ColorsManager.red)),
                 ),
               ],
             );
@@ -182,6 +195,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
   final List<String> _selectedSubjectIds = [];
   bool _loadingSubjects = true;
   bool _isSaving = false;
+  bool _isPasswordObscured = true;
 
   @override
   void initState() {
@@ -212,20 +226,20 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTextField(nameController, 'اسم الدكتور', Icons.person, Colors.orange),
-            _buildTextField(emailController, 'البريد الإلكتروني', Icons.email, Colors.orange),
-            _buildTextField(passwordController, 'كلمة المرور', Icons.lock, Colors.orange, isPassword: true),
+            _buildTextField(nameController, 'اسم الدكتور', Icons.person, ColorsManager.orange),
+            _buildTextField(emailController, 'البريد الإلكتروني', Icons.email, ColorsManager.orange),
+            _buildTextField(passwordController, 'كلمة المرور', Icons.lock, ColorsManager.orange, isPassword: true),
             SizedBox(height: 20.h),
             
             Text(
               'اختر المواد الدراسية:',
-              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: Colors.orange),
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: ColorsManager.orange),
             ),
             SizedBox(height: 10.h),
             _loadingSubjects
                 ? const Center(child: CircularProgressIndicator())
                 : _unassignedSubjects.isEmpty
-                  ? const Text('لا توجد مواد غير مسندة حالياً', style: TextStyle(color: Colors.grey))
+                  ? const Text('لا توجد مواد غير مسندة حالياً', style: TextStyle(color: ColorsManager.grey))
                   : Wrap(
                       spacing: 8.w,
                       runSpacing: 8.h,
@@ -243,10 +257,10 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                               }
                             });
                           },
-                          selectedColor: Colors.orange.withOpacity(0.2),
-                          checkmarkColor: Colors.orange,
+                          selectedColor: ColorsManager.orange.withOpacity(0.2),
+                          checkmarkColor: ColorsManager.orange,
                           labelStyle: TextStyle(
-                            color: isSelected ? Colors.orange : Colors.black87,
+                            color: isSelected ? ColorsManager.orange : ColorsManager.black,
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                           ),
                         );
@@ -280,13 +294,13 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
+                backgroundColor: ColorsManager.orange,
                 minimumSize: Size(double.infinity, 55.h),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.r)),
               ),
               child: _isSaving
-                ? const CircularProgressIndicator(color: Colors.white)
-                : const Text('حفظ الدكتور والمواد', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                ? const CircularProgressIndicator(color: ColorsManager.white)
+                : const Text('حفظ الدكتور والمواد', style: TextStyle(color: ColorsManager.white, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -299,17 +313,322 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
       padding: EdgeInsets.only(bottom: 20.h),
       child: TextField(
         controller: controller,
-        obscureText: isPassword,
+        obscureText: isPassword ? _isPasswordObscured : false,
         enabled: !_isSaving,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon, color: color),
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    _isPasswordObscured ? Icons.visibility_off : Icons.visibility,
+                    color: color,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordObscured = !_isPasswordObscured;
+                    });
+                  },
+                )
+              : null,
           filled: true,
-          fillColor: Colors.grey[100],
+          fillColor: ColorsManager.grey100,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15.r),
             borderSide: BorderSide.none,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Edit Doctor Subjects Screen ────────────────────────────────────────────
+
+class EditDoctorSubjectsScreen extends StatefulWidget {
+  final UserModel doctor;
+
+  const EditDoctorSubjectsScreen({super.key, required this.doctor});
+
+  @override
+  State<EditDoctorSubjectsScreen> createState() => _EditDoctorSubjectsScreenState();
+}
+
+class _EditDoctorSubjectsScreenState extends State<EditDoctorSubjectsScreen> {
+  final FirestoreService _firestoreService = FirestoreService();
+
+  List<SubjectModel> _allSubjects = [];
+  // IDs of subjects currently selected (to be assigned to this doctor)
+  final Set<String> _selectedIds = {};
+  // IDs of subjects that were originally assigned to this doctor (for diffing)
+  final Set<String> _originalIds = {};
+
+  bool _isLoading = true;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      // Load ALL subjects so we can show assigned + unassigned
+      final all = await _firestoreService.getAllSubjects();
+      // Load the subjects already assigned to this doctor
+      final doctorSubjects = await _firestoreService.getDoctorSubjects(widget.doctor.id);
+      final assignedIds = doctorSubjects.map((s) => s.id).toSet();
+
+      if (mounted) {
+        setState(() {
+          // Only show subjects that are either unassigned or assigned to THIS doctor
+          _allSubjects = all.where((s) {
+            return s.doctorId == null || s.doctorId == widget.doctor.id;
+          }).toList();
+          _selectedIds
+            ..clear()
+            ..addAll(assignedIds);
+          _originalIds
+            ..clear()
+            ..addAll(assignedIds);
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _save() async {
+    setState(() => _isSaving = true);
+    try {
+      // Subjects to assign (newly checked that weren't before)
+      final toAssign = _selectedIds.difference(_originalIds);
+      // Subjects to unassign (were checked before but now unchecked)
+      final toUnassign = _originalIds.difference(_selectedIds);
+
+      for (final id in toAssign) {
+        await _firestoreService.assignSubjectToDoctor(id, widget.doctor.id);
+      }
+      for (final id in toUnassign) {
+        await _firestoreService.unassignSubjectFromDoctor(id);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('تم حفظ التغييرات بنجاح'),
+            backgroundColor: ColorsManager.green,
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('حدث خطأ: $e'),
+            backgroundColor: ColorsManager.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('تعديل مواد الدكتور'),
+            Text(
+              widget.doctor.name,
+              style: TextStyle(
+                fontSize: 13.sp,
+                color: ColorsManager.white.withOpacity(0.85),
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [ColorsManager.primaryColor, ColorsManager.primary400],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        iconTheme: const IconThemeData(color: ColorsManager.white),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                // Info header
+                Container(
+                  width: double.infinity,
+                  margin: EdgeInsets.all(20.w),
+                  padding: EdgeInsets.all(15.w),
+                  decoration: BoxDecoration(
+                    color: ColorsManager.primaryColor.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(15.r),
+                    border: Border.all(
+                      color: ColorsManager.primaryColor.withOpacity(0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline, color: ColorsManager.primaryColor),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: Text(
+                          'اختر المواد التي تريد تكليف الدكتور بتدريسها. المواد المحددة حالياً باللون الأساسي.',
+                          style: TextStyle(fontSize: 13.sp, color: ColorsManager.primaryColor),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Subject chips
+                Expanded(
+                  child: _allSubjects.isEmpty
+                      ? Center(
+                          child: Text(
+                            'لا توجد مواد متاحة للإسناد',
+                            style: TextStyle(fontSize: 16.sp, color: ColorsManager.grey),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: EdgeInsets.symmetric(horizontal: 20.w),
+                          itemCount: _allSubjects.length,
+                          itemBuilder: (context, index) {
+                            final subject = _allSubjects[index];
+                            final isSelected = _selectedIds.contains(subject.id);
+                            return _buildSubjectTile(subject, isSelected);
+                          },
+                        ),
+                ),
+
+                // Save button
+                Padding(
+                  padding: EdgeInsets.all(20.w),
+                  child: ElevatedButton.icon(
+                    onPressed: _isSaving ? null : _save,
+                    icon: _isSaving
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: ColorsManager.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Icon(Icons.save_outlined, color: ColorsManager.white),
+                    label: Text(
+                      _isSaving ? 'جاري الحفظ...' : 'حفظ التغييرات',
+                      style: const TextStyle(color: ColorsManager.white, fontWeight: FontWeight.bold),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorsManager.primaryColor,
+                      minimumSize: Size(double.infinity, 55.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15.r),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildSubjectTile(SubjectModel subject, bool isSelected) {
+    return GestureDetector(
+      onTap: _isSaving
+          ? null
+          : () {
+              setState(() {
+                if (isSelected) {
+                  _selectedIds.remove(subject.id);
+                } else {
+                  _selectedIds.add(subject.id);
+                }
+              });
+            },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? ColorsManager.primaryColor.withOpacity(0.1)
+              : ColorsManager.white,
+          borderRadius: BorderRadius.circular(15.r),
+          border: Border.all(
+            color: isSelected ? ColorsManager.primaryColor : ColorsManager.grey100,
+            width: isSelected ? 1.5 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: ColorsManager.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: EdgeInsets.all(10.w),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? ColorsManager.primaryColor.withOpacity(0.15)
+                    : ColorsManager.grey100,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isSelected ? Icons.book : Icons.book_outlined,
+                color: isSelected ? ColorsManager.primaryColor : ColorsManager.grey,
+                size: 20.w,
+              ),
+            ),
+            SizedBox(width: 15.w),
+            Expanded(
+              child: Text(
+                subject.name,
+                style: TextStyle(
+                  fontSize: 15.sp,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? ColorsManager.primaryColor : ColorsManager.black,
+                ),
+              ),
+            ),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: isSelected
+                  ? Icon(
+                      Icons.check_circle,
+                      key: const ValueKey('checked'),
+                      color: ColorsManager.primaryColor,
+                      size: 24.w,
+                    )
+                  : Icon(
+                      Icons.circle_outlined,
+                      key: const ValueKey('unchecked'),
+                      color: ColorsManager.grey200,
+                      size: 24.w,
+                    ),
+            ),
+          ],
         ),
       ),
     );

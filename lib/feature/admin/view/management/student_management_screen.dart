@@ -71,8 +71,8 @@ class _StudentManagementScreenState extends State<StudentManagementScreen> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: widget.isDoctor
-                  ? [Colors.blueAccent, Colors.lightBlueAccent]
-                  : [ColorsManager.teal, Colors.tealAccent],
+                  ? [ColorsManager.primaryColor, ColorsManager.primary400]
+                  : [ColorsManager.primaryColor, ColorsManager.primary400],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -89,7 +89,7 @@ class _StudentManagementScreenState extends State<StudentManagementScreen> {
                 hintText: 'ابحث بالاسم أو الرقم الجامعي...',
                 prefixIcon: const Icon(Icons.search),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: ColorsManager.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15.r),
                   borderSide: BorderSide.none,
@@ -118,7 +118,7 @@ class _StudentManagementScreenState extends State<StudentManagementScreen> {
           ? FloatingActionButton(
               onPressed: () => _showAddOrEditStudentPage(context),
               backgroundColor: ColorsManager.teal,
-              child: const Icon(Icons.add, color: Colors.white),
+              child: const Icon(Icons.add, color: ColorsManager.white),
             )
           : null,
     );
@@ -129,11 +129,11 @@ class _StudentManagementScreenState extends State<StudentManagementScreen> {
       margin: EdgeInsets.only(bottom: 15.h),
       padding: EdgeInsets.all(15.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ColorsManager.white,
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: ColorsManager.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -144,13 +144,13 @@ class _StudentManagementScreenState extends State<StudentManagementScreen> {
           Container(
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
-              color: (widget.isDoctor ? Colors.blue : ColorsManager.teal)
+              color: (widget.isDoctor ? ColorsManager.blue : ColorsManager.teal)
                   .withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.person,
-              color: widget.isDoctor ? Colors.blue : ColorsManager.teal,
+              color: widget.isDoctor ? ColorsManager.blue : ColorsManager.teal,
               size: 25.w,
             ),
           ),
@@ -168,24 +168,27 @@ class _StudentManagementScreenState extends State<StudentManagementScreen> {
                 ),
                 Text(
                   'ID: ${student['Student_ID']} | ${student['Department']}',
-                  style: TextStyle(color: Colors.grey, fontSize: 12.sp),
+                  style: TextStyle(color: ColorsManager.grey, fontSize: 12.sp),
                 ),
               ],
             ),
           ),
           if (widget.isDoctor)
             IconButton(
-              icon: const Icon(Icons.check_circle_outline, color: Colors.green),
+              icon: const Icon(
+                Icons.check_circle_outline,
+                color: ColorsManager.green,
+              ),
               onPressed: () => _manualAttendance(student),
             )
           else ...[
             IconButton(
-              icon: const Icon(Icons.edit_outlined, color: Colors.blue),
+              icon: const Icon(Icons.edit_outlined, color: ColorsManager.blue),
               onPressed: () =>
                   _showAddOrEditStudentPage(context, student: student),
             ),
             IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.red),
+              icon: const Icon(Icons.delete_outline, color: ColorsManager.red),
               onPressed: () => _confirmDelete(student['id']),
             ),
           ],
@@ -205,39 +208,48 @@ class _StudentManagementScreenState extends State<StudentManagementScreen> {
           builder: (context, setState) {
             return AlertDialog(
               title: const Text('تحضير يدوي'),
-              content: innerLoading 
-                ? const SizedBox(height: 100, child: Center(child: CircularProgressIndicator()))
-                : Text('هل تريد تحضير الطالب "${student['Name']}" في مادة ${widget.currentSubject!.name}؟'),
-              actions: innerLoading ? [] : [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('إلغاء'),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    setState(() => innerLoading = true);
-                    final docRef = FirebaseFirestore.instance.collection('attendance').doc();
-                    final record = AttendanceRecordModel(
-                      id: docRef.id,
-                      studentId: student['id'],
-                      studentName: student['Name'],
-                      subjectId: widget.currentSubject!.id,
-                      subjectName: widget.currentSubject!.name,
-                      timestamp: DateTime.now(),
-                    );
-                    await _firestoreService.recordAttendance(record);
-                    if (mounted) {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('تم التحضير بنجاح')),
-                      );
-                    }
-                  },
-                  child: const Text('تأكيد'),
-                ),
-              ],
+              content: innerLoading
+                  ? const SizedBox(
+                      height: 100,
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  : Text(
+                      'هل تريد تحضير الطالب "${student['Name']}" في مادة ${widget.currentSubject!.name}؟',
+                    ),
+              actions: innerLoading
+                  ? []
+                  : [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('إلغاء'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          setState(() => innerLoading = true);
+                          final docRef = FirebaseFirestore.instance
+                              .collection('attendance')
+                              .doc();
+                          final record = AttendanceRecordModel(
+                            id: docRef.id,
+                            studentId: student['Student_ID'].toString(),
+                            studentName: student['Name'],
+                            subjectId: widget.currentSubject!.id,
+                            subjectName: widget.currentSubject!.name,
+                            timestamp: DateTime.now(),
+                          );
+                          await _firestoreService.recordAttendance(record);
+                          if (mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('تم التحضير بنجاح')),
+                            );
+                          }
+                        },
+                        child: const Text('تأكيد'),
+                      ),
+                    ],
             );
-          }
+          },
         );
       },
     );
@@ -253,25 +265,35 @@ class _StudentManagementScreenState extends State<StudentManagementScreen> {
             return AlertDialog(
               title: const Text('تأكيد الحذف'),
               content: innerLoading
-                ? const SizedBox(height: 100, child: Center(child: CircularProgressIndicator()))
-                : const Text('هل أنت متأكد من حذف هذا الطالب من الدليل؟'),
-              actions: innerLoading ? [] : [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('إلغاء'),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    setState(() => innerLoading = true);
-                    await _firestoreService.deleteStudentFromDirectory(id);
-                    Navigator.pop(context);
-                    _loadStudents();
-                  },
-                  child: const Text('حذف', style: TextStyle(color: Colors.red)),
-                ),
-              ],
+                  ? const SizedBox(
+                      height: 100,
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  : const Text('هل أنت متأكد من حذف هذا الطالب من الدليل؟'),
+              actions: innerLoading
+                  ? []
+                  : [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('إلغاء'),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          setState(() => innerLoading = true);
+                          await _firestoreService.deleteStudentFromDirectory(
+                            id,
+                          );
+                          Navigator.pop(context);
+                          _loadStudents();
+                        },
+                        child: const Text(
+                          'حذف',
+                          style: TextStyle(color: ColorsManager.red),
+                        ),
+                      ),
+                    ],
             );
-          }
+          },
         );
       },
     );
@@ -343,35 +365,37 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
             _buildTextField(gradeController, 'الفرقة', Icons.school),
             SizedBox(height: 40.h),
             ElevatedButton(
-              onPressed: _isSaving ? null : () async {
-                if (nameController.text.isNotEmpty &&
-                    idController.text.isNotEmpty) {
-                  setState(() => _isSaving = true);
-                  try {
-                    if (isEditing) {
-                      await _firestoreService.updateStudentInDirectory(
-                        widget.student!['id'],
-                        nameController.text,
-                        idController.text,
-                        branchController.text,
-                        deptController.text,
-                        gradeController.text,
-                      );
-                    } else {
-                      await _firestoreService.addStudentToDirectory(
-                        nameController.text,
-                        idController.text,
-                        branchController.text,
-                        deptController.text,
-                        gradeController.text,
-                      );
-                    }
-                    if (mounted) Navigator.pop(context);
-                  } finally {
-                    if (mounted) setState(() => _isSaving = false);
-                  }
-                }
-              },
+              onPressed: _isSaving
+                  ? null
+                  : () async {
+                      if (nameController.text.isNotEmpty &&
+                          idController.text.isNotEmpty) {
+                        setState(() => _isSaving = true);
+                        try {
+                          if (isEditing) {
+                            await _firestoreService.updateStudentInDirectory(
+                              widget.student!['id'],
+                              nameController.text,
+                              idController.text,
+                              branchController.text,
+                              deptController.text,
+                              gradeController.text,
+                            );
+                          } else {
+                            await _firestoreService.addStudentToDirectory(
+                              nameController.text,
+                              idController.text,
+                              branchController.text,
+                              deptController.text,
+                              gradeController.text,
+                            );
+                          }
+                          if (mounted) Navigator.pop(context);
+                        } finally {
+                          if (mounted) setState(() => _isSaving = false);
+                        }
+                      }
+                    },
               style: ElevatedButton.styleFrom(
                 backgroundColor: ColorsManager.teal,
                 minimumSize: Size(double.infinity, 55.h),
@@ -379,15 +403,15 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                   borderRadius: BorderRadius.circular(15.r),
                 ),
               ),
-              child: _isSaving 
-                ? const CircularProgressIndicator(color: Colors.white)
-                : Text(
-                    isEditing ? 'تحديث البيانات' : 'حفظ الطالب',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+              child: _isSaving
+                  ? const CircularProgressIndicator(color: ColorsManager.white)
+                  : Text(
+                      isEditing ? 'تحديث البيانات' : 'حفظ الطالب',
+                      style: const TextStyle(
+                        color: ColorsManager.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
             ),
           ],
         ),
@@ -409,7 +433,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
           labelText: label,
           prefixIcon: Icon(icon, color: ColorsManager.teal),
           filled: true,
-          fillColor: Colors.grey[100],
+          fillColor: ColorsManager.grey100,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15.r),
             borderSide: BorderSide.none,

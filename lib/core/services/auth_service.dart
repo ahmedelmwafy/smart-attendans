@@ -6,7 +6,9 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirestoreService _firestoreService = FirestoreService();
 
-  Stream<User?> get user => _auth.authStateChanges();
+  Stream<User?> get userStream => _auth.authStateChanges();
+
+  User? get currentUser => _auth.currentUser;
 
   Future<UserCredential?> signUp(
     String email,
