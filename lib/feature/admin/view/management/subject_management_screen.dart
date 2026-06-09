@@ -42,14 +42,14 @@ class _SubjectManagementScreenState extends State<SubjectManagementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('إدارة المواد'),
+        title: Text(
+          'إدارة المواد',
+          style: TextStyle(fontSize: 22.sp, color: ColorsManager.white),
+        ),
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                ColorsManager.green,
-                ColorsManager.green.withOpacity(0.7),
-              ],
+              colors: [ColorsManager.primaryColor, ColorsManager.primary400],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -70,7 +70,7 @@ class _SubjectManagementScreenState extends State<SubjectManagementScreen> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddSubjectPage(context),
-        backgroundColor: ColorsManager.green,
+        backgroundColor: ColorsManager.teal,
         child: const Icon(Icons.add, color: ColorsManager.white),
       ),
     );
@@ -96,10 +96,10 @@ class _SubjectManagementScreenState extends State<SubjectManagementScreen> {
           Container(
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
-              color: ColorsManager.green.withOpacity(0.1),
+              color: ColorsManager.teal.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.book, color: ColorsManager.green, size: 25.w),
+            child: Icon(Icons.book, color: ColorsManager.teal, size: 25.w),
           ),
           SizedBox(width: 15.w),
           Expanded(
@@ -127,19 +127,26 @@ class _SubjectManagementScreenState extends State<SubjectManagementScreen> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.group_add_outlined, color: ColorsManager.primaryColor),
+            icon: const Icon(
+              Icons.group_add_outlined,
+              color: ColorsManager.primaryColor,
+            ),
             tooltip: 'تخصيص الطلاب',
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => EditSubjectStudentsScreen(subject: subject),
+                  builder: (context) =>
+                      EditSubjectStudentsScreen(subject: subject),
                 ),
               ).then((_) => _loadSubjects());
             },
           ),
           IconButton(
-            icon: const Icon(Icons.notifications_active_outlined, color: ColorsManager.orange),
+            icon: const Icon(
+              Icons.notifications_active_outlined,
+              color: ColorsManager.orange,
+            ),
             tooltip: 'إرسال تنبيه غياب',
             onPressed: () => _confirmSendAbsenceAlert(subject),
           ),
@@ -215,7 +222,9 @@ class _SubjectManagementScreenState extends State<SubjectManagementScreen> {
                       height: 100,
                       child: Center(child: CircularProgressIndicator()),
                     )
-                  : Text('هل تريد إرسال تنبيه بالغياب للطلاب غير الحاضرين في مادة "${subject.name}" اليوم؟'),
+                  : Text(
+                      'هل تريد إرسال تنبيه بالغياب للطلاب غير الحاضرين في مادة "${subject.name}" اليوم؟',
+                    ),
               actions: innerLoading
                   ? []
                   : [
@@ -227,16 +236,19 @@ class _SubjectManagementScreenState extends State<SubjectManagementScreen> {
                         onPressed: () async {
                           setState(() => innerLoading = true);
                           try {
-                            final count = await _firestoreService.sendAbsenceAlerts(
-                              subjectId: subject.id,
-                              subjectName: subject.name,
-                              date: DateTime.now(),
-                            );
+                            final count = await _firestoreService
+                                .sendAbsenceAlerts(
+                                  subjectId: subject.id,
+                                  subjectName: subject.name,
+                                  date: DateTime.now(),
+                                );
                             if (mounted) {
                               Navigator.pop(context);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('تم إرسال تنبيه الغياب لعدد $count طالب'),
+                                  content: Text(
+                                    'تم إرسال تنبيه الغياب لعدد $count طالب',
+                                  ),
                                   backgroundColor: ColorsManager.green,
                                 ),
                               );
@@ -292,7 +304,7 @@ class _AddSubjectScreenState extends State<AddSubjectScreen> {
               enabled: !_isSaving,
               decoration: InputDecoration(
                 labelText: 'اسم المادة',
-                prefixIcon: const Icon(Icons.book, color: ColorsManager.green),
+                prefixIcon: const Icon(Icons.book, color: ColorsManager.teal),
                 filled: true,
                 fillColor: ColorsManager.grey100,
                 border: OutlineInputBorder(
@@ -325,7 +337,7 @@ class _AddSubjectScreenState extends State<AddSubjectScreen> {
                       }
                     },
               style: ElevatedButton.styleFrom(
-                backgroundColor: ColorsManager.green,
+                backgroundColor: ColorsManager.teal,
                 minimumSize: Size(double.infinity, 55.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15.r),
@@ -356,7 +368,8 @@ class EditSubjectStudentsScreen extends StatefulWidget {
   const EditSubjectStudentsScreen({super.key, required this.subject});
 
   @override
-  State<EditSubjectStudentsScreen> createState() => _EditSubjectStudentsScreenState();
+  State<EditSubjectStudentsScreen> createState() =>
+      _EditSubjectStudentsScreenState();
 }
 
 class _EditSubjectStudentsScreenState extends State<EditSubjectStudentsScreen> {
@@ -382,16 +395,16 @@ class _EditSubjectStudentsScreenState extends State<EditSubjectStudentsScreen> {
   Future<void> _loadData() async {
     try {
       final students = await _firestoreService.getAllStudentsFromDirectory();
-      
+
       if (mounted) {
         setState(() {
           _allStudents = students;
           _filteredStudents = students;
-          
+
           final assignedIds = widget.subject.enrolledStudentIds.toSet();
           _selectedIds.addAll(assignedIds);
           _originalIds.addAll(assignedIds);
-          
+
           _isLoading = false;
         });
       }
@@ -414,7 +427,10 @@ class _EditSubjectStudentsScreenState extends State<EditSubjectStudentsScreen> {
   Future<void> _save() async {
     setState(() => _isSaving = true);
     try {
-      await _firestoreService.updateSubjectEnrollment(widget.subject.id, _selectedIds.toList());
+      await _firestoreService.updateSubjectEnrollment(
+        widget.subject.id,
+        _selectedIds.toList(),
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -519,17 +535,28 @@ class _EditSubjectStudentsScreenState extends State<EditSubjectStudentsScreen> {
                         ? const SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(color: ColorsManager.white, strokeWidth: 2),
+                            child: CircularProgressIndicator(
+                              color: ColorsManager.white,
+                              strokeWidth: 2,
+                            ),
                           )
-                        : const Icon(Icons.save_outlined, color: ColorsManager.white),
+                        : const Icon(
+                            Icons.save_outlined,
+                            color: ColorsManager.white,
+                          ),
                     label: Text(
                       _isSaving ? 'جاري الحفظ...' : 'حفظ التغييرات',
-                      style: const TextStyle(color: ColorsManager.white, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        color: ColorsManager.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: ColorsManager.primaryColor,
                       minimumSize: Size(double.infinity, 55.h),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.r)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15.r),
+                      ),
                     ),
                   ),
                 ),

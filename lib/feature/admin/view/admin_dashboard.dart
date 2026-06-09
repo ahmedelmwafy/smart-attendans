@@ -87,7 +87,7 @@ class AdminDashboard extends StatelessWidget {
                       title: 'إدارة المواد',
                       subtitle: 'إدارة المواد الدراسية وحالة تفعيلها',
                       icon: Icons.library_books,
-                      color: ColorsManager.green,
+                      color: ColorsManager.teal,
                       onTap: () =>
                           Navigator.pushNamed(context, AppRoutes.subjectList),
                     ),
@@ -96,7 +96,7 @@ class AdminDashboard extends StatelessWidget {
                       title: 'إدارة الدكاترة',
                       subtitle: 'إضافة وإدارة حسابات أعضاء هيئة التدريس',
                       icon: Icons.supervisor_account,
-                      color: ColorsManager.orange,
+                      color: ColorsManager.teal,
                       onTap: () =>
                           Navigator.pushNamed(context, AppRoutes.doctorList),
                     ),
@@ -105,7 +105,7 @@ class AdminDashboard extends StatelessWidget {
                       title: 'سجل الحضور العام',
                       subtitle: 'مراجعة كافة سجلات الحضور في التطبيق',
                       icon: Icons.list_alt,
-                      color: ColorsManager.purple,
+                      color: ColorsManager.teal,
                       onTap: () => Navigator.pushNamed(
                         context,
                         AppRoutes.attendanceHistory,

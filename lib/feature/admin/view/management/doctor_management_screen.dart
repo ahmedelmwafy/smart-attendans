@@ -43,11 +43,14 @@ class _DoctorManagementScreenState extends State<DoctorManagementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('إدارة الدكاترة'),
+        title: const Text(
+          'إدارة الدكاترة',
+          style: TextStyle(color: ColorsManager.white),
+        ),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [ColorsManager.orange, ColorsManager.secondary200],
+              colors: [ColorsManager.primaryColor, ColorsManager.primary400],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -57,18 +60,18 @@ class _DoctorManagementScreenState extends State<DoctorManagementScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _doctors.isEmpty
-              ? const Center(child: Text('لا يوجد دكاترة مضافين'))
-              : ListView.builder(
-                  padding: EdgeInsets.all(20.w),
-                  itemCount: _doctors.length,
-                  itemBuilder: (context, index) {
-                    final doctor = _doctors[index];
-                    return _buildDoctorCard(doctor);
-                  },
-                ),
+          ? const Center(child: Text('لا يوجد دكاترة مضافين'))
+          : ListView.builder(
+              padding: EdgeInsets.all(20.w),
+              itemCount: _doctors.length,
+              itemBuilder: (context, index) {
+                final doctor = _doctors[index];
+                return _buildDoctorCard(doctor);
+              },
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddDoctorPage(context),
-        backgroundColor: ColorsManager.orange,
+        backgroundColor: ColorsManager.teal,
         child: const Icon(Icons.person_add, color: ColorsManager.white),
       ),
     );
@@ -94,10 +97,14 @@ class _DoctorManagementScreenState extends State<DoctorManagementScreen> {
           Container(
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
-              color: ColorsManager.orange.withOpacity(0.1),
+              color: ColorsManager.teal.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.supervisor_account, color: ColorsManager.orange, size: 25.w),
+            child: Icon(
+              Icons.supervisor_account,
+              color: ColorsManager.teal,
+              size: 25.w,
+            ),
           ),
           SizedBox(width: 15.w),
           Expanded(
@@ -106,7 +113,10 @@ class _DoctorManagementScreenState extends State<DoctorManagementScreen> {
               children: [
                 Text(
                   doctor.name,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16.sp,
+                  ),
                 ),
                 Text(
                   doctor.email,
@@ -116,13 +126,17 @@ class _DoctorManagementScreenState extends State<DoctorManagementScreen> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.book_outlined, color: ColorsManager.primaryColor),
+            icon: const Icon(
+              Icons.book_outlined,
+              color: ColorsManager.primaryColor,
+            ),
             tooltip: 'تعديل المواد',
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => EditDoctorSubjectsScreen(doctor: doctor),
+                  builder: (context) =>
+                      EditDoctorSubjectsScreen(doctor: doctor),
                 ),
               ).then((_) => _loadDoctors());
             },
@@ -146,22 +160,33 @@ class _DoctorManagementScreenState extends State<DoctorManagementScreen> {
             return AlertDialog(
               title: const Text('تأكيد الحذف'),
               content: innerLoading
-                ? const SizedBox(height: 100, child: Center(child: CircularProgressIndicator()))
-                : const Text('هل أنت متأكد من حذف هذا الدكتور؟'),
-              actions: innerLoading ? [] : [
-                TextButton(onPressed: () => Navigator.pop(context), child: const Text('إلغاء')),
-                TextButton(
-                  onPressed: () async {
-                    setState(() => innerLoading = true);
-                    await _firestoreService.deleteUser(id);
-                    Navigator.pop(context);
-                    _loadDoctors();
-                  },
-                  child: const Text('حذف', style: TextStyle(color: ColorsManager.red)),
-                ),
-              ],
+                  ? const SizedBox(
+                      height: 100,
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  : const Text('هل أنت متأكد من حذف هذا الدكتور؟'),
+              actions: innerLoading
+                  ? []
+                  : [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('إلغاء'),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          setState(() => innerLoading = true);
+                          await _firestoreService.deleteUser(id);
+                          Navigator.pop(context);
+                          _loadDoctors();
+                        },
+                        child: const Text(
+                          'حذف',
+                          style: TextStyle(color: ColorsManager.red),
+                        ),
+                      ),
+                    ],
             );
-          }
+          },
         );
       },
     );
@@ -170,9 +195,7 @@ class _DoctorManagementScreenState extends State<DoctorManagementScreen> {
   void _showAddDoctorPage(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const AddDoctorScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const AddDoctorScreen()),
     ).then((_) => _loadDoctors());
   }
 }
@@ -190,7 +213,8 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
   final passwordController = TextEditingController();
   final FirestoreService _firestoreService = FirestoreService();
   final AuthService _authService = AuthService();
-  
+  final _formKey = GlobalKey<FormState>();
+
   List<SubjectModel> _unassignedSubjects = [];
   final List<String> _selectedSubjectIds = [];
   bool _loadingSubjects = true;
@@ -223,96 +247,176 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
       appBar: AppBar(title: const Text('إضافة دكتور جديد')),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(25.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildTextField(nameController, 'اسم الدكتور', Icons.person, ColorsManager.orange),
-            _buildTextField(emailController, 'البريد الإلكتروني', Icons.email, ColorsManager.orange),
-            _buildTextField(passwordController, 'كلمة المرور', Icons.lock, ColorsManager.orange, isPassword: true),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildTextField(
+                nameController,
+                'اسم الدكتور',
+                Icons.person,
+                ColorsManager.teal,
+                validator: (val) {
+                  if (val == null || val.isEmpty) {
+                    return 'يرجى إدخال اسم الدكتور';
+                  }
+                  return null;
+                },
+              ),
+              _buildTextField(
+                emailController,
+                'البريد الإلكتروني',
+                Icons.email,
+                ColorsManager.teal,
+                validator: (val) {
+                  if (val == null || val.isEmpty) {
+                    return 'يرجى إدخال البريد الإلكتروني';
+                  }
+                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val)) {
+                    return 'يرجى إدخال بريد إلكتروني صحيح';
+                  }
+                  return null;
+                },
+              ),
+              _buildTextField(
+                passwordController,
+                'كلمة المرور',
+                Icons.lock,
+                ColorsManager.teal,
+                isPassword: true,
+                validator: (val) {
+                  if (val == null || val.isEmpty) {
+                    return 'يرجى إدخال كلمة المرور';
+                  }
+                  if (val.length < 6) {
+                    return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+                  }
+                  return null;
+                },
+              ),
             SizedBox(height: 20.h),
-            
+
             Text(
               'اختر المواد الدراسية:',
-              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: ColorsManager.orange),
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold,
+                color: ColorsManager.teal,
+              ),
             ),
             SizedBox(height: 10.h),
             _loadingSubjects
                 ? const Center(child: CircularProgressIndicator())
                 : _unassignedSubjects.isEmpty
-                  ? const Text('لا توجد مواد غير مسندة حالياً', style: TextStyle(color: ColorsManager.grey))
-                  : Wrap(
-                      spacing: 8.w,
-                      runSpacing: 8.h,
-                      children: _unassignedSubjects.map((subject) {
-                        final isSelected = _selectedSubjectIds.contains(subject.id);
-                        return FilterChip(
-                          label: Text(subject.name),
-                          selected: isSelected,
-                          onSelected: _isSaving ? null : (selected) {
-                            setState(() {
-                              if (selected) {
-                                _selectedSubjectIds.add(subject.id);
-                              } else {
-                                _selectedSubjectIds.remove(subject.id);
-                              }
-                            });
-                          },
-                          selectedColor: ColorsManager.orange.withOpacity(0.2),
-                          checkmarkColor: ColorsManager.orange,
-                          labelStyle: TextStyle(
-                            color: isSelected ? ColorsManager.orange : ColorsManager.black,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          ),
-                        );
-                      }).toList(),
-                    ),
-            
+                ? const Text(
+                    'لا توجد مواد غير مسندة حالياً',
+                    style: TextStyle(color: ColorsManager.grey),
+                  )
+                : Wrap(
+                    spacing: 8.w,
+                    runSpacing: 8.h,
+                    children: _unassignedSubjects.map((subject) {
+                      final isSelected = _selectedSubjectIds.contains(
+                        subject.id,
+                      );
+                      return FilterChip(
+                        label: Text(subject.name),
+                        selected: isSelected,
+                        onSelected: _isSaving
+                            ? null
+                            : (selected) {
+                                setState(() {
+                                  if (selected) {
+                                    _selectedSubjectIds.add(subject.id);
+                                  } else {
+                                    _selectedSubjectIds.remove(subject.id);
+                                  }
+                                });
+                              },
+                        selectedColor: ColorsManager.teal.withOpacity(0.2),
+                        checkmarkColor: ColorsManager.teal,
+                        labelStyle: TextStyle(
+                          color: isSelected
+                              ? ColorsManager.teal
+                              : ColorsManager.black,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+
             SizedBox(height: 40.h),
             ElevatedButton(
-              onPressed: _isSaving ? null : () async {
-                if (nameController.text.isNotEmpty && emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
-                  setState(() => _isSaving = true);
-                  try {
-                    final result = await _authService.signUp(
-                      emailController.text,
-                      passwordController.text,
-                      nameController.text,
-                      null,
-                      isDoctor: true,
-                    );
-                    
-                    if (result != null && _selectedSubjectIds.isNotEmpty) {
-                      for (var id in _selectedSubjectIds) {
-                        await _firestoreService.assignSubjectToDoctor(id, result.user!.uid);
+              onPressed: _isSaving
+                  ? null
+                  : () async {
+                      if (_formKey.currentState!.validate()) {
+                        setState(() => _isSaving = true);
+                        try {
+                          final result = await _authService.signUp(
+                            emailController.text,
+                            passwordController.text,
+                            nameController.text,
+                            null,
+                            isDoctor: true,
+                          );
+
+                          if (result != null &&
+                              _selectedSubjectIds.isNotEmpty) {
+                            for (var id in _selectedSubjectIds) {
+                              await _firestoreService.assignSubjectToDoctor(
+                                id,
+                                result.user!.uid,
+                              );
+                            }
+                          }
+
+                          if (mounted) Navigator.pop(context);
+                        } finally {
+                          if (mounted) setState(() => _isSaving = false);
+                        }
                       }
-                    }
-                    
-                    if (mounted) Navigator.pop(context);
-                  } finally {
-                    if (mounted) setState(() => _isSaving = false);
-                  }
-                }
-              },
+                    },
               style: ElevatedButton.styleFrom(
-                backgroundColor: ColorsManager.orange,
+                backgroundColor: ColorsManager.teal,
                 minimumSize: Size(double.infinity, 55.h),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.r)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15.r),
+                ),
               ),
               child: _isSaving
-                ? const CircularProgressIndicator(color: ColorsManager.white)
-                : const Text('حفظ الدكتور والمواد', style: TextStyle(color: ColorsManager.white, fontWeight: FontWeight.bold)),
+                  ? const CircularProgressIndicator(color: ColorsManager.white)
+                  : const Text(
+                      'حفظ الدكتور والمواد',
+                      style: TextStyle(
+                        color: ColorsManager.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
             ),
           ],
         ),
       ),
+    ),
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, IconData icon, Color color, {bool isPassword = false}) {
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label,
+    IconData icon,
+    Color color, {
+    bool isPassword = false,
+    String? Function(String?)? validator,
+  }) {
     return Padding(
       padding: EdgeInsets.only(bottom: 20.h),
-      child: TextField(
+      child: TextFormField(
         controller: controller,
+        validator: validator,
         obscureText: isPassword ? _isPasswordObscured : false,
         enabled: !_isSaving,
         decoration: InputDecoration(
@@ -321,7 +425,9 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
           suffixIcon: isPassword
               ? IconButton(
                   icon: Icon(
-                    _isPasswordObscured ? Icons.visibility_off : Icons.visibility,
+                    _isPasswordObscured
+                        ? Icons.visibility_off
+                        : Icons.visibility,
                     color: color,
                   ),
                   onPressed: () {
@@ -351,7 +457,8 @@ class EditDoctorSubjectsScreen extends StatefulWidget {
   const EditDoctorSubjectsScreen({super.key, required this.doctor});
 
   @override
-  State<EditDoctorSubjectsScreen> createState() => _EditDoctorSubjectsScreenState();
+  State<EditDoctorSubjectsScreen> createState() =>
+      _EditDoctorSubjectsScreenState();
 }
 
 class _EditDoctorSubjectsScreenState extends State<EditDoctorSubjectsScreen> {
@@ -377,7 +484,9 @@ class _EditDoctorSubjectsScreenState extends State<EditDoctorSubjectsScreen> {
       // Load ALL subjects so we can show assigned + unassigned
       final all = await _firestoreService.getAllSubjects();
       // Load the subjects already assigned to this doctor
-      final doctorSubjects = await _firestoreService.getDoctorSubjects(widget.doctor.id);
+      final doctorSubjects = await _firestoreService.getDoctorSubjects(
+        widget.doctor.id,
+      );
       final assignedIds = doctorSubjects.map((s) => s.id).toSet();
 
       if (mounted) {
@@ -485,12 +594,18 @@ class _EditDoctorSubjectsScreenState extends State<EditDoctorSubjectsScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.info_outline, color: ColorsManager.primaryColor),
+                      const Icon(
+                        Icons.info_outline,
+                        color: ColorsManager.primaryColor,
+                      ),
                       SizedBox(width: 10.w),
                       Expanded(
                         child: Text(
                           'اختر المواد التي تريد تكليف الدكتور بتدريسها. المواد المحددة حالياً باللون الأساسي.',
-                          style: TextStyle(fontSize: 13.sp, color: ColorsManager.primaryColor),
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            color: ColorsManager.primaryColor,
+                          ),
                         ),
                       ),
                     ],
@@ -503,7 +618,10 @@ class _EditDoctorSubjectsScreenState extends State<EditDoctorSubjectsScreen> {
                       ? Center(
                           child: Text(
                             'لا توجد مواد متاحة للإسناد',
-                            style: TextStyle(fontSize: 16.sp, color: ColorsManager.grey),
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              color: ColorsManager.grey,
+                            ),
                           ),
                         )
                       : ListView.builder(
@@ -511,7 +629,9 @@ class _EditDoctorSubjectsScreenState extends State<EditDoctorSubjectsScreen> {
                           itemCount: _allSubjects.length,
                           itemBuilder: (context, index) {
                             final subject = _allSubjects[index];
-                            final isSelected = _selectedIds.contains(subject.id);
+                            final isSelected = _selectedIds.contains(
+                              subject.id,
+                            );
                             return _buildSubjectTile(subject, isSelected);
                           },
                         ),
@@ -531,10 +651,16 @@ class _EditDoctorSubjectsScreenState extends State<EditDoctorSubjectsScreen> {
                               strokeWidth: 2,
                             ),
                           )
-                        : const Icon(Icons.save_outlined, color: ColorsManager.white),
+                        : const Icon(
+                            Icons.save_outlined,
+                            color: ColorsManager.white,
+                          ),
                     label: Text(
                       _isSaving ? 'جاري الحفظ...' : 'حفظ التغييرات',
-                      style: const TextStyle(color: ColorsManager.white, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        color: ColorsManager.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: ColorsManager.primaryColor,
@@ -573,7 +699,9 @@ class _EditDoctorSubjectsScreenState extends State<EditDoctorSubjectsScreen> {
               : ColorsManager.white,
           borderRadius: BorderRadius.circular(15.r),
           border: Border.all(
-            color: isSelected ? ColorsManager.primaryColor : ColorsManager.grey100,
+            color: isSelected
+                ? ColorsManager.primaryColor
+                : ColorsManager.grey100,
             width: isSelected ? 1.5 : 1,
           ),
           boxShadow: [
@@ -597,7 +725,9 @@ class _EditDoctorSubjectsScreenState extends State<EditDoctorSubjectsScreen> {
               ),
               child: Icon(
                 isSelected ? Icons.book : Icons.book_outlined,
-                color: isSelected ? ColorsManager.primaryColor : ColorsManager.grey,
+                color: isSelected
+                    ? ColorsManager.primaryColor
+                    : ColorsManager.grey,
                 size: 20.w,
               ),
             ),
@@ -608,7 +738,9 @@ class _EditDoctorSubjectsScreenState extends State<EditDoctorSubjectsScreen> {
                 style: TextStyle(
                   fontSize: 15.sp,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? ColorsManager.primaryColor : ColorsManager.black,
+                  color: isSelected
+                      ? ColorsManager.primaryColor
+                      : ColorsManager.black,
                 ),
               ),
             ),
