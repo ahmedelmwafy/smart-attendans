@@ -86,7 +86,7 @@ class _DoctorManagementScreenState extends State<DoctorManagementScreen> {
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: ColorsManager.black.withOpacity(0.05),
+            color: ColorsManager.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -97,7 +97,7 @@ class _DoctorManagementScreenState extends State<DoctorManagementScreen> {
           Container(
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
-              color: ColorsManager.teal.withOpacity(0.1),
+              color: ColorsManager.teal.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -270,10 +270,14 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                 Icons.email,
                 ColorsManager.teal,
                 validator: (val) {
+                  final emailRegex = RegExp(
+                    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                  );
+
                   if (val == null || val.isEmpty) {
                     return 'يرجى إدخال البريد الإلكتروني';
                   }
-                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val)) {
+                  if (!emailRegex.hasMatch(val)) {
                     return 'يرجى إدخال بريد إلكتروني صحيح';
                   }
                   return null;
@@ -295,112 +299,116 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                   return null;
                 },
               ),
-            SizedBox(height: 20.h),
+              SizedBox(height: 20.h),
 
-            Text(
-              'اختر المواد الدراسية:',
-              style: TextStyle(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.bold,
-                color: ColorsManager.teal,
-              ),
-            ),
-            SizedBox(height: 10.h),
-            _loadingSubjects
-                ? const Center(child: CircularProgressIndicator())
-                : _unassignedSubjects.isEmpty
-                ? const Text(
-                    'لا توجد مواد غير مسندة حالياً',
-                    style: TextStyle(color: ColorsManager.grey),
-                  )
-                : Wrap(
-                    spacing: 8.w,
-                    runSpacing: 8.h,
-                    children: _unassignedSubjects.map((subject) {
-                      final isSelected = _selectedSubjectIds.contains(
-                        subject.id,
-                      );
-                      return FilterChip(
-                        label: Text(subject.name),
-                        selected: isSelected,
-                        onSelected: _isSaving
-                            ? null
-                            : (selected) {
-                                setState(() {
-                                  if (selected) {
-                                    _selectedSubjectIds.add(subject.id);
-                                  } else {
-                                    _selectedSubjectIds.remove(subject.id);
-                                  }
-                                });
-                              },
-                        selectedColor: ColorsManager.teal.withOpacity(0.2),
-                        checkmarkColor: ColorsManager.teal,
-                        labelStyle: TextStyle(
-                          color: isSelected
-                              ? ColorsManager.teal
-                              : ColorsManager.black,
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                        ),
-                      );
-                    }).toList(),
-                  ),
-
-            SizedBox(height: 40.h),
-            ElevatedButton(
-              onPressed: _isSaving
-                  ? null
-                  : () async {
-                      if (_formKey.currentState!.validate()) {
-                        setState(() => _isSaving = true);
-                        try {
-                          final result = await _authService.signUp(
-                            emailController.text,
-                            passwordController.text,
-                            nameController.text,
-                            null,
-                            isDoctor: true,
-                          );
-
-                          if (result != null &&
-                              _selectedSubjectIds.isNotEmpty) {
-                            for (var id in _selectedSubjectIds) {
-                              await _firestoreService.assignSubjectToDoctor(
-                                id,
-                                result.user!.uid,
-                              );
-                            }
-                          }
-
-                          if (mounted) Navigator.pop(context);
-                        } finally {
-                          if (mounted) setState(() => _isSaving = false);
-                        }
-                      }
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ColorsManager.teal,
-                minimumSize: Size(double.infinity, 55.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15.r),
+              Text(
+                'اختر المواد الدراسية:',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                  color: ColorsManager.teal,
                 ),
               ),
-              child: _isSaving
-                  ? const CircularProgressIndicator(color: ColorsManager.white)
-                  : const Text(
-                      'حفظ الدكتور والمواد',
-                      style: TextStyle(
-                        color: ColorsManager.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+              SizedBox(height: 10.h),
+              _loadingSubjects
+                  ? const Center(child: CircularProgressIndicator())
+                  : _unassignedSubjects.isEmpty
+                  ? const Text(
+                      'لا توجد مواد غير مسندة حالياً',
+                      style: TextStyle(color: ColorsManager.grey),
+                    )
+                  : Wrap(
+                      spacing: 8.w,
+                      runSpacing: 8.h,
+                      children: _unassignedSubjects.map((subject) {
+                        final isSelected = _selectedSubjectIds.contains(
+                          subject.id,
+                        );
+                        return FilterChip(
+                          label: Text(subject.name),
+                          selected: isSelected,
+                          onSelected: _isSaving
+                              ? null
+                              : (selected) {
+                                  setState(() {
+                                    if (selected) {
+                                      _selectedSubjectIds.add(subject.id);
+                                    } else {
+                                      _selectedSubjectIds.remove(subject.id);
+                                    }
+                                  });
+                                },
+                          selectedColor: ColorsManager.teal.withValues(
+                            alpha: 0.2,
+                          ),
+                          checkmarkColor: ColorsManager.teal,
+                          labelStyle: TextStyle(
+                            color: isSelected
+                                ? ColorsManager.teal
+                                : ColorsManager.black,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        );
+                      }).toList(),
                     ),
-            ),
-          ],
+
+              SizedBox(height: 40.h),
+              ElevatedButton(
+                onPressed: _isSaving
+                    ? null
+                    : () async {
+                        if (_formKey.currentState!.validate()) {
+                          setState(() => _isSaving = true);
+                          try {
+                            final result = await _authService.signUp(
+                              emailController.text,
+                              passwordController.text,
+                              nameController.text,
+                              null,
+                              isDoctor: true,
+                            );
+
+                            if (result != null &&
+                                _selectedSubjectIds.isNotEmpty) {
+                              for (var id in _selectedSubjectIds) {
+                                await _firestoreService.assignSubjectToDoctor(
+                                  id,
+                                  result.user!.uid,
+                                );
+                              }
+                            }
+
+                            if (mounted) Navigator.pop(context);
+                          } finally {
+                            if (mounted) setState(() => _isSaving = false);
+                          }
+                        }
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ColorsManager.teal,
+                  minimumSize: Size(double.infinity, 55.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.r),
+                  ),
+                ),
+                child: _isSaving
+                    ? const CircularProgressIndicator(
+                        color: ColorsManager.white,
+                      )
+                    : const Text(
+                        'حفظ الدكتور والمواد',
+                        style: TextStyle(
+                          color: ColorsManager.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
     );
   }
 
@@ -559,7 +567,7 @@ class _EditDoctorSubjectsScreenState extends State<EditDoctorSubjectsScreen> {
               widget.doctor.name,
               style: TextStyle(
                 fontSize: 13.sp,
-                color: ColorsManager.white.withOpacity(0.85),
+                color: ColorsManager.white.withValues(alpha: 0.85),
                 fontWeight: FontWeight.normal,
               ),
             ),
@@ -586,10 +594,10 @@ class _EditDoctorSubjectsScreenState extends State<EditDoctorSubjectsScreen> {
                   margin: EdgeInsets.all(20.w),
                   padding: EdgeInsets.all(15.w),
                   decoration: BoxDecoration(
-                    color: ColorsManager.primaryColor.withOpacity(0.08),
+                    color: ColorsManager.primaryColor.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(15.r),
                     border: Border.all(
-                      color: ColorsManager.primaryColor.withOpacity(0.2),
+                      color: ColorsManager.primaryColor.withValues(alpha: 0.2),
                     ),
                   ),
                   child: Row(
@@ -695,7 +703,7 @@ class _EditDoctorSubjectsScreenState extends State<EditDoctorSubjectsScreen> {
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         decoration: BoxDecoration(
           color: isSelected
-              ? ColorsManager.primaryColor.withOpacity(0.1)
+              ? ColorsManager.primaryColor.withValues(alpha: 0.1)
               : ColorsManager.white,
           borderRadius: BorderRadius.circular(15.r),
           border: Border.all(
@@ -706,7 +714,7 @@ class _EditDoctorSubjectsScreenState extends State<EditDoctorSubjectsScreen> {
           ),
           boxShadow: [
             BoxShadow(
-              color: ColorsManager.black.withOpacity(0.04),
+              color: ColorsManager.black.withValues(alpha: 0.04),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -719,7 +727,7 @@ class _EditDoctorSubjectsScreenState extends State<EditDoctorSubjectsScreen> {
               padding: EdgeInsets.all(10.w),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? ColorsManager.primaryColor.withOpacity(0.15)
+                    ? ColorsManager.primaryColor.withValues(alpha: 0.15)
                     : ColorsManager.grey100,
                 shape: BoxShape.circle,
               ),
